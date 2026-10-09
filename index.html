@@ -4,29 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kestrel</title>
-<meta name="description" content="Kestrel is a desktop app for running AI coding agents. Read each thread, review every file change, and commit only what you accept.">
+<meta name="description" content="Kestrel is a desktop workspace for AI coding agents. Run several side by side, watch what each one does, and review every change before it lands.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23101318'/%3E%3Cpath d='M4 17c6-1 9-5 12-9 1 5 5 8 12 9-5 1-8 3-12 8-4-5-7-7-12-8z' fill='%234da3ff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#101318; --panel:#171b22; --raise:#1e232c; --line:#2b323d;
+  --ink:#101318; --desk:#0b0e12; --panel:#171b22; --raise:#1e232c; --line:#2b323d;
   --text:#eef1f5; --muted:#8c96a5; --accent:#4da3ff; --on-accent:#06101d;
   --add-bg:#16301f; --add:#6fdc96; --del-bg:#3a1d22; --del:#ff8a8f;
   --ok:#30d158; --danger:#ff6b6b;
+  --k-read:#64a8ff; --k-edit:#ff9f43; --k-run:#30d158; --k-search:#bf5af2; --k-web:#5ac8fa;
 }
 @media (prefers-color-scheme: light){
   :root{
-    --ink:#f4f6f9; --panel:#ffffff; --raise:#eef1f6; --line:#d6dce5;
+    --ink:#f4f6f9; --desk:#e6eaf0; --panel:#ffffff; --raise:#eef1f6; --line:#d6dce5;
     --text:#14181f; --muted:#5b6574; --accent:#0a62c9; --on-accent:#fff;
     --add-bg:#dff3e6; --add:#146c37; --del-bg:#fbe3e5; --del:#a4252d;
+    --k-read:#2f7be0; --k-edit:#d9760f; --k-run:#1b9a42; --k-search:#9a3fd0; --k-web:#1b8ab8;
   }
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--ink);color:var(--text);font:400 17px/1.6 "Schibsted Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:inherit}
+button{font-family:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
 .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
 
@@ -36,16 +39,82 @@ header.top{display:flex;align-items:center;justify-content:space-between;padding
 nav a{margin-left:24px;color:var(--muted);text-decoration:none;font-size:15px}
 nav a:hover{color:var(--text)}
 
-.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:56px;align-items:center;padding:56px 0 88px}
-h1{font-size:clamp(38px,5.4vw,64px);line-height:1.04;letter-spacing:-.035em;font-weight:800;margin:0 0 22px;max-width:12ch}
-.lede{color:var(--muted);font-size:19px;max-width:34em;margin:0 0 32px}
+.hero{padding:48px 0 32px;max-width:760px}
+h1{font-size:clamp(40px,6vw,72px);line-height:1.02;letter-spacing:-.04em;font-weight:800;margin:0 0 22px}
+.lede{color:var(--muted);font-size:20px;max-width:36em;margin:0 0 30px}
 .cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
 .btn{display:inline-block;background:var(--accent);color:var(--on-accent);font-weight:700;padding:13px 22px;border-radius:10px;text-decoration:none}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
 .btn[aria-disabled="true"]{opacity:.6;cursor:default}
-.note{color:var(--muted);font-size:14px;margin-top:16px}
+.note{color:var(--muted);font-size:14px;margin:14px 0 0}
 
-.demo{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 30px 80px -30px rgba(0,0,0,.55)}
+/* ---------- workspace demo ---------- */
+.stage{margin:40px 0 0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel);box-shadow:0 40px 90px -40px rgba(0,0,0,.6)}
+.ws-toolbar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.ws-toolbar .proj{font-weight:700;font-size:14px;margin-right:6px}
+.ws-toolbar button{font-size:13px;padding:5px 12px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--text);cursor:pointer}
+.ws-toolbar button:hover{border-color:var(--muted)}
+.ws-toolbar .sp{flex:1}
+.ws-toolbar .count{font-size:13px;color:var(--muted)}
+.canvas{position:relative;height:460px;background:
+  radial-gradient(circle at 1px 1px,var(--line) 1px,transparent 0) 0 0/22px 22px,var(--desk);overflow:hidden;touch-action:none}
+.win{position:absolute;left:0;top:0;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 10px 30px -10px rgba(0,0,0,.5);transition:transform .28s ease,width .28s ease,height .28s ease,opacity .2s ease}
+.win.focused{border-color:var(--muted);box-shadow:0 22px 50px -14px rgba(0,0,0,.65)}
+.win.moving{transition:none}
+.win.gone{opacity:0;pointer-events:none;transform:scale(.9)!important}
+.win-title{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--raise);border-bottom:1px solid var(--line);cursor:grab;user-select:none;-webkit-user-select:none}
+.win.moving .win-title{cursor:grabbing}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
+.win.working .pulse{background:var(--accent);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}50%{box-shadow:0 0 0 5px transparent}}
+.win-title b{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.win-title .who{font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.win-title button{flex:none;width:22px;height:22px;border:0;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;padding:0}
+.win-title button:hover{background:var(--line);color:var(--text)}
+.win-body{padding:10px 12px;font-size:13px;line-height:1.5;display:flex;flex-direction:column;gap:6px;overflow:hidden;flex:1;min-height:0}
+.win-body p{margin:0}
+.win-body .you{color:var(--muted)}
+.win-body code{font:400 12px "JetBrains Mono",monospace;color:var(--accent)}
+.ticks{display:flex;align-items:flex-end;gap:3px;height:16px;margin-top:auto;overflow:hidden}
+.t{width:4px;height:10px;border-radius:1px;background:var(--muted);flex:none}
+.t.read{background:var(--k-read)}.t.edit{background:var(--k-edit)}.t.run{background:var(--k-run)}.t.search{background:var(--k-search)}.t.web{background:var(--k-web)}
+.t.live{animation:tick .9s ease-in-out infinite}
+@keyframes tick{50%{height:16px}}
+.dock{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:8px;padding:0 12px 10px;pointer-events:none;z-index:999}
+.dock button{pointer-events:auto;display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dock button:hover{border-color:var(--muted)}
+.dock .pulse{background:var(--ok)}
+.dock .working .pulse{background:var(--accent)}
+.hint{text-align:center;color:var(--muted);font-size:14px;margin:14px 0 0}
+
+/* ---------- sections ---------- */
+section{padding:84px 0;border-top:1px solid var(--line)}
+h2{font-size:clamp(28px,3.8vw,42px);line-height:1.1;letter-spacing:-.03em;margin:0 0 14px;max-width:18ch}
+.sub{color:var(--muted);max-width:38em;margin:0 0 36px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:56px;align-items:center}
+.split.flip{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+.split.flip .copy{order:2}
+.points{list-style:none;margin:0;padding:0}
+.points li{padding:14px 0;border-top:1px solid var(--line)}
+.points li:last-child{border-bottom:1px solid var(--line)}
+.points strong{display:block}
+.points span{color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+
+/* activity panel */
+.act{padding:16px}
+.act h4{margin:0 0 10px;font-size:13px;font-weight:700;display:flex;justify-content:space-between}
+.act h4 span{color:var(--muted);font-weight:500}
+.act .ticks{margin:0 0 18px;height:18px}
+.bar{display:grid;grid-template-columns:76px 1fr 28px;gap:10px;align-items:center;font-size:13px;margin:7px 0}
+.bar .track{height:8px;background:var(--raise);border-radius:4px;overflow:hidden}
+.bar .fill{display:block;height:100%;border-radius:4px}
+.bar .n{color:var(--muted);text-align:right}
+.files{list-style:none;margin:0 0 18px;padding:0;font:400 12.5px "JetBrains Mono",monospace}
+.files li{display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid var(--line)}
+.files .n{color:var(--muted)}
+
+/* diff demo */
 .demo-bar{padding:12px 16px;border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}
 .demo-bar b{color:var(--text);font-weight:500}
 .file{border-bottom:1px solid var(--line)}
@@ -67,27 +136,28 @@ pre span{display:block;padding:0 16px;white-space:pre}
 .demo-foot button{font:700 14px "Schibsted Grotesk",sans-serif;padding:9px 16px;border-radius:8px;border:0;background:var(--accent);color:var(--on-accent);cursor:pointer}
 .demo-foot button:disabled{opacity:.35;cursor:not-allowed}
 .status{padding:0 16px 14px;font-size:14px;color:var(--muted);min-height:1.6em}
-.hint{text-align:center;color:var(--muted);font-size:14px;margin-top:12px}
 
-section{padding:72px 0;border-top:1px solid var(--line)}
-h2{font-size:clamp(28px,3.6vw,40px);line-height:1.12;letter-spacing:-.025em;margin:0 0 14px;max-width:20ch}
-.sub{color:var(--muted);max-width:40em;margin:0 0 40px}
-.feat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 56px}
-.feat h3{margin:0 0 6px;font-size:19px;letter-spacing:-.01em}
+/* providers */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 28px;padding:0;list-style:none}
+.chips li{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 16px;font-size:15px}
+.feat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px 48px}
+.feat h3{margin:0 0 6px;font-size:18px;letter-spacing:-.01em}
 .feat p{margin:0;color:var(--muted)}
-.rules{list-style:none;margin:0;padding:0;max-width:720px}
-.rules li{padding:18px 0;border-bottom:1px solid var(--line);display:flex;gap:16px}
-.rules li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:11px}
-.rules strong{display:block}
-.rules span{color:var(--muted)}
+
 footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 
 @media (max-width:860px){
-  .hero{grid-template-columns:minmax(0,1fr);gap:40px;padding-top:24px}
+  .split,.split.flip{grid-template-columns:minmax(0,1fr);gap:32px}
+  .split.flip .copy{order:0}
   .feat{grid-template-columns:minmax(0,1fr)}
+  .canvas{height:560px}
   nav a{margin-left:16px}
 }
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+@media (max-width:560px){
+  nav a:not([href="#download"]){display:none}
+  section{padding:64px 0}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
@@ -97,24 +167,90 @@ footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);f
       <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M2 17c7-1 10-5 14-10 1 6 6 9 14 10-6 1-10 4-14 9-4-5-8-8-14-9z" fill="#4da3ff"/></svg>
       Kestrel
     </a>
-    <nav><a href="#features">Features</a><a href="#safety">Safety</a><a href="#download">Download</a></nav>
+    <nav><a href="#windows">Workspace</a><a href="#review">Review</a><a href="#agents">Agents</a><a href="#download">Download</a></nav>
   </header>
 
   <main>
     <div class="hero">
-      <div>
-        <h1>See what your agent changed before it lands.</h1>
-        <p class="lede">Kestrel is a desktop app for AI coding agents. Start Claude Code or Codex in any folder, follow the conversation as a thread, and accept or reject each changed file before you commit.</p>
-        <div class="cta">
-          <a class="btn" href="#download">Download for Windows</a>
-          <a class="btn ghost" href="#features">See how it works</a>
-        </div>
-        <p class="note">Free alpha. Windows first.</p>
+      <h1>Every agent, one workspace.</h1>
+      <p class="lede">Kestrel is a desktop workspace for AI coding agents. Give each agent its own window, run them side by side across your projects, and review what they changed before anything is committed.</p>
+      <div class="cta">
+        <a class="btn" href="#download">Download for Windows</a>
+        <a class="btn ghost" href="#windows">See the workspace</a>
       </div>
+      <p class="note">Free alpha. Windows first.</p>
+    </div>
 
-      <div>
-        <div class="demo" aria-label="Interactive example of reviewing file changes">
-          <div class="demo-bar"><b>Fix login redirect</b> · 3 files changed</div>
+    <div class="stage" id="stage">
+      <div class="ws-toolbar">
+        <span class="proj">checkout-app</span>
+        <button type="button" id="tile">Tile</button>
+        <button type="button" id="cascade">Cascade</button>
+        <span class="sp"></span>
+        <span class="count" id="count" role="status" aria-live="polite"></span>
+      </div>
+      <div class="canvas" id="canvas">
+        <div class="win working" data-title="Fix login redirect">
+          <div class="win-title"><span class="pulse"></span><b>Fix login redirect</b><span class="who">Claude Code</span><button type="button" class="min" aria-label="Minimize Fix login redirect">&minus;</button></div>
+          <div class="win-body">
+            <p class="you">Open redirect on /login. Fix it and add a test.</p>
+            <p>Reading <code>auth/redirect.ts</code>. The <code>next</code> param isn't checked.</p>
+            <p>Editing <code>auth/sanitize.ts</code>&hellip;</p>
+            <div class="ticks" data-seed="read,read,search,read,edit,run,read,edit"></div>
+          </div>
+        </div>
+        <div class="win working" data-title="Add rate limiting">
+          <div class="win-title"><span class="pulse"></span><b>Add rate limiting</b><span class="who">Codex</span><button type="button" class="min" aria-label="Minimize Add rate limiting">&minus;</button></div>
+          <div class="win-body">
+            <p class="you">Limit /api/checkout to 20 requests a minute per IP.</p>
+            <p>Searching for existing middleware&hellip;</p>
+            <p>Found <code>middleware/limits.ts</code>. Extending it.</p>
+            <div class="ticks" data-seed="search,search,read,read,edit,edit,run"></div>
+          </div>
+        </div>
+        <div class="win" data-title="Update README">
+          <div class="win-title"><span class="pulse"></span><b>Update README</b><span class="who">Custom provider</span><button type="button" class="min" aria-label="Minimize Update README">&minus;</button></div>
+          <div class="win-body">
+            <p class="you">Document the new environment variables.</p>
+            <p>Done. Added a table of 6 variables to <code>README.md</code>.</p>
+            <div class="ticks" data-seed="read,read,web,edit"></div>
+          </div>
+        </div>
+        <div class="dock" id="dock"></div>
+      </div>
+    </div>
+    <p class="hint">This is a working demo. Drag a window by its title bar, minimize it, or try Tile.</p>
+
+    <section id="windows">
+      <div class="split">
+        <div class="copy">
+          <h2>A window for every agent.</h2>
+          <p class="sub">Most agent tools give you one chat at a time. In Kestrel each thread opens as its own window on a shared canvas, so a slow task doesn't block the next one.</p>
+          <ul class="points">
+            <li><strong>Move, resize, snap.</strong><span>Drag a window to a screen edge to snap it to half the canvas, or tile everything in one click.</span></li>
+            <li><strong>Minimize to the dock.</strong><span>A minimized window keeps working, and its dock button pulses until it's done.</span></li>
+            <li><strong>Your layout is remembered.</strong><span>Each project reopens with its windows where you left them.</span></li>
+            <li><strong>One tab per project.</strong><span>Switch projects from the tab bar at the top without losing track of what's running.</span></li>
+          </ul>
+        </div>
+        <div class="card act" aria-label="Example of an agent's Activity view">
+          <h4>Activity: Fix login redirect <span>26 tool calls</span></h4>
+          <div class="ticks" aria-hidden="true" data-seed="read,read,search,read,read,edit,read,run,edit,read,search,run,edit,read,run,run"></div>
+          <div class="bar"><span>Reading</span><span class="track"><span class="fill" style="width:100%;background:var(--k-read)"></span></span><span class="n">14</span></div>
+          <div class="bar"><span>Running</span><span class="track"><span class="fill" style="width:36%;background:var(--k-run)"></span></span><span class="n">5</span></div>
+          <div class="bar"><span>Searching</span><span class="track"><span class="fill" style="width:29%;background:var(--k-search)"></span></span><span class="n">4</span></div>
+          <div class="bar"><span>Editing</span><span class="track"><span class="fill" style="width:21%;background:var(--k-edit)"></span></span><span class="n">3</span></div>
+          <h4 style="margin-top:18px">Edited <span>3</span></h4>
+          <ul class="files"><li><span>src/auth/redirect.ts</span><span class="n">&times;2</span></li><li><span>src/auth/sanitize.ts</span></li><li><span>package.json</span></li></ul>
+          <p class="note" style="margin:0">Switch any window between Chat and Activity to see what the agent is doing, not just what it says.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="review">
+      <div class="split flip">
+        <div class="card" aria-label="Interactive example of reviewing file changes">
+          <div class="demo-bar"><b>Fix login redirect</b> &middot; 3 files changed</div>
 
           <div class="file" data-state="pending">
             <div class="file-head"><span class="fname">src/auth/redirect.ts</span>
@@ -148,39 +284,36 @@ footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);f
           </div>
           <div class="status" id="status" role="status" aria-live="polite">Review each file to enable commit.</div>
         </div>
-        <p class="hint">This is a working demo. Try it.</p>
-      </div>
-    </div>
-
-    <section id="features">
-      <h2>A control panel for agents you already use.</h2>
-      <p class="sub">Kestrel doesn't run a model itself. It launches the agents on your machine and gives you one place to follow and check their work.</p>
-      <div class="feat">
-        <div><h3>Threads per project</h3><p>Pick a folder and start a conversation. Threads and messages are saved locally, so they're still there after a restart.</p></div>
-        <div><h3>File-by-file review</h3><p>Every file the agent touched appears as a diff. Accept the ones you want and reject the rest.</p></div>
-        <div><h3>Git commits you control</h3><p>Write the message, click Commit. Kestrel works in plain folders too, by comparing against a snapshot taken before the run.</p></div>
-        <div><h3>Claude Code, Codex, or your own</h3><p>Switch between agents, or add a provider that points Claude Code at an Anthropic-compatible endpoint.</p></div>
-        <div><h3>Usage at a glance</h3><p>See usage by provider and model, plus the subscription windows reported by the Claude Code CLI.</p></div>
-        <div><h3>Local by default</h3><p>No account and no hosted backend. Your threads live on your computer.</p></div>
+        <div class="copy">
+          <h2>Review is part of the workspace.</h2>
+          <p class="sub">The changes panel sits beside your windows. Every file an agent touched is a diff you can accept or reject, and nothing is committed until you say so. Try it on the left.</p>
+          <ul class="points">
+            <li><strong>Works with Git or plain folders.</strong><span>For folders without Git, Kestrel compares against a snapshot taken before the run.</span></li>
+            <li><strong>Commands are shown first.</strong><span>Shell commands from an agent are displayed before they run, unless you turn on auto-approve.</span></li>
+            <li><strong>Nothing commits itself.</strong><span>Kestrel only commits when you click Commit.</span></li>
+          </ul>
+        </div>
       </div>
     </section>
 
-    <section id="safety">
-      <h2>You approve everything that changes your code.</h2>
-      <p class="sub">Agents are fast, so Kestrel makes the checkpoints explicit.</p>
-      <ul class="rules">
-        <li><div><strong>Edits go through review.</strong><span>Agent changes are shown as a diff before they become part of your project's committed state.</span></div></li>
-        <li><div><strong>Commands are shown first.</strong><span>Shell commands from the agent are displayed before they run, unless you turn on auto-approve.</span></div></li>
-        <li><div><strong>Nothing commits itself.</strong><span>Kestrel only commits when you click Commit.</span></div></li>
-        <li><div><strong>Keys stay in the OS credential store.</strong><span>Provider API keys are not saved in the database or in plain text files.</span></div></li>
-      </ul>
+    <section id="agents">
+      <h2>Bring the agents you already use.</h2>
+      <p class="sub">Kestrel doesn't run a model itself. It launches the agents on your machine, so your existing logins, plans and settings carry over.</p>
+      <ul class="chips"><li>Claude Code</li><li>Codex</li><li>Your own provider</li></ul>
+      <div class="feat">
+        <div><h3>A different agent per window</h3><p>Each window keeps its own agent and model, so one project can use several at once.</p></div>
+        <div><h3>Custom providers</h3><p>Point Claude Code at any Anthropic-compatible endpoint. API keys are stored in the OS credential store, not in a file.</p></div>
+        <div><h3>Usage at a glance</h3><p>See usage by provider and model, plus the subscription windows reported by the Claude Code CLI.</p></div>
+        <div><h3>Threads that last</h3><p>Conversations are saved on your computer and are still there after a restart.</p></div>
+        <div><h3>No account</h3><p>There's no sign-up and no hosted backend. Your work stays local.</p></div>
+        <div><h3>Windows first</h3><p>The first release is for Windows. macOS and Linux aren't planned yet.</p></div>
+      </div>
     </section>
 
     <section id="download">
       <h2>Get the Windows alpha.</h2>
       <p class="sub">Kestrel needs Git and the <code>claude</code> CLI installed. The installer link will appear here when the first alpha build is published.</p>
       <a class="btn" href="#download" aria-disabled="true">Installer coming soon</a>
-      <p class="note">macOS and Linux aren't planned for the first release.</p>
     </section>
   </main>
 
@@ -189,6 +322,110 @@ footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);f
 
 <script>
 (function(){
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var canvas=document.getElementById('canvas'), dock=document.getElementById('dock'), countEl=document.getElementById('count');
+  var wins=[].slice.call(canvas.querySelectorAll('.win')).map(function(el,i){
+    return {el:el,x:0,y:0,w:0,h:0,min:false,z:i+1};
+  });
+  var GAP=14, DOCK=44, top=wins.length;
+
+  function size(){return {w:canvas.clientWidth,h:canvas.clientHeight}}
+  function place(w){
+    w.el.style.width=w.w+'px'; w.el.style.height=w.h+'px';
+    w.el.style.transform='translate('+w.x+'px,'+w.y+'px)';
+    w.el.style.zIndex=w.z;
+  }
+  function clamp(w){
+    var b=size();
+    w.x=Math.max(0,Math.min(w.x,b.w-w.w)); w.y=Math.max(0,Math.min(w.y,b.h-DOCK-w.h));
+  }
+  function cascade(){
+    var b=size(), narrow=b.w<560, n=wins.length;
+    var vis=wins.filter(function(w){return !w.min});
+    var ww=Math.min(narrow?b.w-GAP*2:340,b.w-GAP*2), wh=Math.min(narrow?170:210,b.h-DOCK-GAP*2);
+    var dx=vis.length>1?(b.w-ww-GAP*2)/(vis.length-1):0, dy=vis.length>1?(b.h-DOCK-wh-GAP*2)/(vis.length-1):0;
+    vis.forEach(function(w,i){w.w=ww;w.h=wh;w.x=GAP+dx*i;w.y=GAP+dy*i;});
+  }
+  function tile(){
+    var b=size(), vis=wins.filter(function(w){return !w.min});
+    if(!vis.length)return;
+    var cols=b.w>=560?Math.min(2,vis.length):1, rows=Math.ceil(vis.length/cols);
+    var ww=(b.w-GAP*(cols+1))/cols, wh=(b.h-DOCK-GAP*(rows+1))/rows;
+    vis.forEach(function(w,i){
+      w.w=Math.floor(ww);w.h=Math.floor(wh);
+      w.x=GAP+(i%cols)*(ww+GAP); w.y=GAP+Math.floor(i/cols)*(wh+GAP);
+    });
+  }
+  function render(){
+    wins.forEach(function(w){
+      w.el.classList.toggle('gone',w.min);
+      if(!w.min)place(w);
+    });
+    dock.innerHTML='';
+    wins.filter(function(w){return w.min}).forEach(function(w){
+      var b=document.createElement('button'); b.type='button';
+      if(w.el.classList.contains('working'))b.className='working';
+      b.innerHTML='<span class="pulse"></span>';
+      b.appendChild(document.createTextNode(w.el.dataset.title));
+      b.onclick=function(){w.min=false;focus(w);render();};
+      dock.appendChild(b);
+    });
+    var open=wins.filter(function(w){return !w.min}).length, working=wins.filter(function(w){return !w.min&&w.el.classList.contains('working')}).length;
+    countEl.textContent=working?working+' working':open+' open';
+  }
+  function focus(w){
+    top++; w.z=top; w.el.style.zIndex=top;
+    wins.forEach(function(o){o.el.classList.toggle('focused',o===w)});
+  }
+
+  wins.forEach(function(w){
+    var title=w.el.querySelector('.win-title');
+    w.el.addEventListener('pointerdown',function(){focus(w)});
+    w.el.querySelector('.min').onclick=function(e){e.stopPropagation();w.min=true;render();};
+    title.addEventListener('pointerdown',function(e){
+      if(e.target.closest('button'))return;
+      e.preventDefault();
+      var sx=e.clientX,sy=e.clientY,ox=w.x,oy=w.y;
+      w.el.classList.add('moving'); title.setPointerCapture(e.pointerId);
+      function move(ev){w.x=ox+ev.clientX-sx;w.y=oy+ev.clientY-sy;clamp(w);place(w);}
+      function up(){
+        w.el.classList.remove('moving');
+        title.removeEventListener('pointermove',move);title.removeEventListener('pointerup',up);title.removeEventListener('pointercancel',up);
+      }
+      title.addEventListener('pointermove',move);title.addEventListener('pointerup',up);title.addEventListener('pointercancel',up);
+    });
+  });
+
+  document.getElementById('tile').onclick=function(){wins.forEach(function(w){w.min=false});tile();render();};
+  document.getElementById('cascade').onclick=function(){wins.forEach(function(w){w.min=false});cascade();render();};
+
+  var lastW=0;
+  function layout(){
+    var b=size(); if(b.w===lastW)return; lastW=b.w;
+    cascade(); render();
+    focus(wins[wins.length-1]);
+  }
+  layout(); window.addEventListener('resize',layout);
+
+  // tick timelines: seed from data, working windows keep adding ticks
+  var kinds=['read','read','search','edit','run','web'];
+  function addTick(box,kind,live){
+    var t=document.createElement('span'); t.className='t '+kind; box.appendChild(t);
+    while(box.children.length>26)box.removeChild(box.firstChild);
+    return t;
+  }
+  [].slice.call(document.querySelectorAll('.ticks')).forEach(function(box){
+    (box.dataset.seed||'').split(',').forEach(function(k){if(k)addTick(box,k)});
+    var win=box.closest('.win');
+    if(win&&win.classList.contains('working')&&!reduce){
+      setInterval(function(){
+        var old=box.querySelector('.live'); if(old)old.classList.remove('live');
+        addTick(box,kinds[Math.floor(Math.random()*kinds.length)]).classList.add('live');
+      },1400+Math.random()*600);
+    }
+  });
+
+  // diff review demo
   var files=[].slice.call(document.querySelectorAll('.file'));
   var commit=document.getElementById('commit'), status=document.getElementById('status'), msg=document.getElementById('msg');
   function count(s){return files.filter(function(f){return f.dataset.state===s}).length}
