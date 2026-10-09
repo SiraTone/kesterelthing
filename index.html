@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kestrel</title>
-<meta name="description" content="Kestrel is a desktop workspace for AI coding agents. Run several side by side, watch what each one does, and review every change before it lands.">
+<meta name="description" content="Kestrel is a desktop workspace for AI coding agents. Run several side by side, watch what each one does, keep notes and a browser beside them, and review every change before it lands.">
 <meta name="theme-color" content="#0B3D2E">
 <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
@@ -176,7 +176,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);f
       <picture><source srcset="assets/icon.svg" media="(prefers-color-scheme: light)"><img src="assets/icon-light.svg" alt="" width="30" height="30"></picture>
       <span>Kestrel</span>
     </a>
-    <nav><a href="#windows">Workspace</a><a href="#review">Review</a><a href="#agents">Agents</a><a href="#download">Download</a></nav>
+    <nav><a href="#windows">Workspace</a><a href="#review">Review</a><a href="#tools">Tools</a><a href="#agents">Agents</a><a href="#download">Download</a></nav>
   </header>
 
   <main>
@@ -239,7 +239,8 @@ footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);f
             <li><strong>Move, resize, snap.</strong><span>Drag a window to a screen edge to snap it to half the canvas, or tile everything in one click.</span></li>
             <li><strong>Minimize to the dock.</strong><span>A minimized window keeps working, and its dock button pulses until it's done.</span></li>
             <li><strong>Your layout is remembered.</strong><span>Each project reopens with its windows where you left them.</span></li>
-            <li><strong>One tab per project.</strong><span>Switch projects from the tab bar at the top without losing track of what's running.</span></li>
+            <li><strong>One tab per project.</strong><span>Switch projects from the tab bar at the top, and drag tabs to put them in the order you want.</span></li>
+            <li><strong>Chat, Activity or the real terminal.</strong><span>Run the full interactive Claude Code UI inside a window when you want it exactly as the CLI draws it.</span></li>
           </ul>
         </div>
         <div class="card act" aria-label="Example of an agent's Activity view">
@@ -305,15 +306,28 @@ footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);f
       </div>
     </section>
 
+    <section id="tools">
+      <h2>More than a chat window.</h2>
+      <p class="sub">Everything you reach for while an agent works lives in the same app.</p>
+      <div class="feat">
+        <div><h3>Built-in browser</h3><p>Look up docs or check your running app in a browser tab inside Kestrel, without switching windows.</p></div>
+        <div><h3>Notes</h3><p>Each project has a scratchpad that saves as you type. Click Read Notes to start a chat where the agent reads them.</p></div>
+        <div><h3>Project memory</h3><p>Save facts and preferences for a project. Every new session starts with them, so you stop repeating yourself.</p></div>
+        <div><h3>Skills</h3><p>Browse the skills installed for Claude Code and Codex, read what each one says, and write new ones in the Skill Creator.</p></div>
+        <div><h3>File tree</h3><p>See the project's files next to your windows and keep track of what the agent is working on.</p></div>
+        <div><h3>Dictation</h3><p>Speak your prompt instead of typing it. Speech recognition uses your system's built-in recognizer.</p></div>
+      </div>
+    </section>
+
     <section id="agents">
       <h2>Bring the agents you already use.</h2>
       <p class="sub">Kestrel doesn't run a model itself. It launches the agents on your machine, so your existing logins, plans and settings carry over.</p>
-      <ul class="chips"><li>Claude Code</li><li>Codex</li><li>Your own provider</li></ul>
+      <ul class="chips"><li>Claude Code</li><li>Codex</li><li>OpenCode</li><li>Your own provider</li></ul>
       <div class="feat">
         <div><h3>A different agent per window</h3><p>Each window keeps its own agent and model, so one project can use several at once.</p></div>
         <div><h3>Custom providers</h3><p>Point Claude Code at any Anthropic-compatible endpoint. API keys are stored in the OS credential store, not in a file.</p></div>
         <div><h3>Usage at a glance</h3><p>See usage by provider and model, plus the subscription windows reported by the Claude Code CLI.</p></div>
-        <div><h3>Threads that last</h3><p>Conversations are saved on your computer and are still there after a restart.</p></div>
+        <div><h3>Threads that last</h3><p>Conversations are saved on your computer and are still there after a restart. Thread titles are written for you from the first prompt.</p></div>
         <div><h3>No account</h3><p>There's no sign-up and no hosted backend. Your work stays local.</p></div>
         <div><h3>Windows first</h3><p>The first release is for Windows. macOS and Linux aren't planned yet.</p></div>
       </div>
