@@ -1,1 +1,219 @@
-hi
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kestrel</title>
+<meta name="description" content="Kestrel is a desktop app for running AI coding agents. Read each thread, review every file change, and commit only what you accept.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23101318'/%3E%3Cpath d='M4 17c6-1 9-5 12-9 1 5 5 8 12 9-5 1-8 3-12 8-4-5-7-7-12-8z' fill='%234da3ff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#101318; --panel:#171b22; --raise:#1e232c; --line:#2b323d;
+  --text:#eef1f5; --muted:#8c96a5; --accent:#4da3ff; --on-accent:#06101d;
+  --add-bg:#16301f; --add:#6fdc96; --del-bg:#3a1d22; --del:#ff8a8f;
+  --ok:#30d158; --danger:#ff6b6b;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --ink:#f4f6f9; --panel:#ffffff; --raise:#eef1f6; --line:#d6dce5;
+    --text:#14181f; --muted:#5b6574; --accent:#0a62c9; --on-accent:#fff;
+    --add-bg:#dff3e6; --add:#146c37; --del-bg:#fbe3e5; --del:#a4252d;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ink);color:var(--text);font:400 17px/1.6 "Schibsted Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+header.top{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.01em;text-decoration:none}
+.brand svg{width:28px;height:28px}
+nav a{margin-left:24px;color:var(--muted);text-decoration:none;font-size:15px}
+nav a:hover{color:var(--text)}
+
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:56px;align-items:center;padding:56px 0 88px}
+h1{font-size:clamp(38px,5.4vw,64px);line-height:1.04;letter-spacing:-.035em;font-weight:800;margin:0 0 22px;max-width:12ch}
+.lede{color:var(--muted);font-size:19px;max-width:34em;margin:0 0 32px}
+.cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.btn{display:inline-block;background:var(--accent);color:var(--on-accent);font-weight:700;padding:13px 22px;border-radius:10px;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn[aria-disabled="true"]{opacity:.6;cursor:default}
+.note{color:var(--muted);font-size:14px;margin-top:16px}
+
+.demo{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 30px 80px -30px rgba(0,0,0,.55)}
+.demo-bar{padding:12px 16px;border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}
+.demo-bar b{color:var(--text);font-weight:500}
+.file{border-bottom:1px solid var(--line)}
+.file-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:var(--raise)}
+.fname{font:500 13px "JetBrains Mono",monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acts{display:flex;gap:6px;flex:none}
+.acts button{font:500 13px "Schibsted Grotesk",sans-serif;padding:5px 12px;border-radius:7px;border:1px solid var(--line);background:transparent;color:var(--text);cursor:pointer}
+.acts button:hover{border-color:var(--muted)}
+.file[data-state="accepted"] .acts .acc{background:var(--ok);border-color:var(--ok);color:#04140a}
+.file[data-state="rejected"] .acts .rej{background:var(--danger);border-color:var(--danger);color:#1a0505}
+.file[data-state="rejected"] pre{opacity:.4}
+pre{white-space:normal;margin:0;padding:8px 0;font:400 13px/1.7 "JetBrains Mono",monospace;overflow-x:auto;transition:opacity .2s}
+pre span{display:block;padding:0 16px;white-space:pre}
+.a{background:var(--add-bg);color:var(--add)}
+.d{background:var(--del-bg);color:var(--del)}
+.c{color:var(--muted)}
+.demo-foot{display:flex;gap:10px;padding:12px 16px;align-items:center}
+.demo-foot input{flex:1;min-width:0;background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--text);font:400 14px "Schibsted Grotesk",sans-serif}
+.demo-foot button{font:700 14px "Schibsted Grotesk",sans-serif;padding:9px 16px;border-radius:8px;border:0;background:var(--accent);color:var(--on-accent);cursor:pointer}
+.demo-foot button:disabled{opacity:.35;cursor:not-allowed}
+.status{padding:0 16px 14px;font-size:14px;color:var(--muted);min-height:1.6em}
+.hint{text-align:center;color:var(--muted);font-size:14px;margin-top:12px}
+
+section{padding:72px 0;border-top:1px solid var(--line)}
+h2{font-size:clamp(28px,3.6vw,40px);line-height:1.12;letter-spacing:-.025em;margin:0 0 14px;max-width:20ch}
+.sub{color:var(--muted);max-width:40em;margin:0 0 40px}
+.feat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 56px}
+.feat h3{margin:0 0 6px;font-size:19px;letter-spacing:-.01em}
+.feat p{margin:0;color:var(--muted)}
+.rules{list-style:none;margin:0;padding:0;max-width:720px}
+.rules li{padding:18px 0;border-bottom:1px solid var(--line);display:flex;gap:16px}
+.rules li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:11px}
+.rules strong{display:block}
+.rules span{color:var(--muted)}
+footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:minmax(0,1fr);gap:40px;padding-top:24px}
+  .feat{grid-template-columns:minmax(0,1fr)}
+  nav a{margin-left:16px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#" aria-label="Kestrel home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M2 17c7-1 10-5 14-10 1 6 6 9 14 10-6 1-10 4-14 9-4-5-8-8-14-9z" fill="#4da3ff"/></svg>
+      Kestrel
+    </a>
+    <nav><a href="#features">Features</a><a href="#safety">Safety</a><a href="#download">Download</a></nav>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <h1>See what your agent changed before it lands.</h1>
+        <p class="lede">Kestrel is a desktop app for AI coding agents. Start Claude Code or Codex in any folder, follow the conversation as a thread, and accept or reject each changed file before you commit.</p>
+        <div class="cta">
+          <a class="btn" href="#download">Download for Windows</a>
+          <a class="btn ghost" href="#features">See how it works</a>
+        </div>
+        <p class="note">Free alpha. Windows first.</p>
+      </div>
+
+      <div>
+        <div class="demo" aria-label="Interactive example of reviewing file changes">
+          <div class="demo-bar"><b>Fix login redirect</b> · 3 files changed</div>
+
+          <div class="file" data-state="pending">
+            <div class="file-head"><span class="fname">src/auth/redirect.ts</span>
+              <span class="acts"><button class="acc" type="button" aria-pressed="false">Accept</button><button class="rej" type="button" aria-pressed="false">Reject</button></span></div>
+<pre><span class="c">@@ -12,7 +12,9 @@</span>
+<span class="d">- return navigate(params.next)</span>
+<span class="a">+ const next = sanitize(params.next)</span>
+<span class="a">+ return navigate(next ?? "/home")</span></pre>
+          </div>
+
+          <div class="file" data-state="pending">
+            <div class="file-head"><span class="fname">src/auth/sanitize.ts</span>
+              <span class="acts"><button class="acc" type="button" aria-pressed="false">Accept</button><button class="rej" type="button" aria-pressed="false">Reject</button></span></div>
+<pre><span class="c">@@ new file @@</span>
+<span class="a">+ export function sanitize(url?: string) {</span>
+<span class="a">+   return url?.startsWith("/") ? url : null</span>
+<span class="a">+ }</span></pre>
+          </div>
+
+          <div class="file" data-state="pending">
+            <div class="file-head"><span class="fname">package.json</span>
+              <span class="acts"><button class="acc" type="button" aria-pressed="false">Accept</button><button class="rej" type="button" aria-pressed="false">Reject</button></span></div>
+<pre><span class="c">@@ -8,6 +8,7 @@</span>
+<span class="d">-   "lint": "tsc --noEmit"</span>
+<span class="a">+   "lint": "tsc --noEmit &amp;&amp; eslint ."</span></pre>
+          </div>
+
+          <div class="demo-foot">
+            <input id="msg" type="text" value="Fix open redirect on login" aria-label="Commit message">
+            <button id="commit" type="button" disabled>Commit</button>
+          </div>
+          <div class="status" id="status" role="status" aria-live="polite">Review each file to enable commit.</div>
+        </div>
+        <p class="hint">This is a working demo. Try it.</p>
+      </div>
+    </div>
+
+    <section id="features">
+      <h2>A control panel for agents you already use.</h2>
+      <p class="sub">Kestrel doesn't run a model itself. It launches the agents on your machine and gives you one place to follow and check their work.</p>
+      <div class="feat">
+        <div><h3>Threads per project</h3><p>Pick a folder and start a conversation. Threads and messages are saved locally, so they're still there after a restart.</p></div>
+        <div><h3>File-by-file review</h3><p>Every file the agent touched appears as a diff. Accept the ones you want and reject the rest.</p></div>
+        <div><h3>Git commits you control</h3><p>Write the message, click Commit. Kestrel works in plain folders too, by comparing against a snapshot taken before the run.</p></div>
+        <div><h3>Claude Code, Codex, or your own</h3><p>Switch between agents, or add a provider that points Claude Code at an Anthropic-compatible endpoint.</p></div>
+        <div><h3>Usage at a glance</h3><p>See usage by provider and model, plus the subscription windows reported by the Claude Code CLI.</p></div>
+        <div><h3>Local by default</h3><p>No account and no hosted backend. Your threads live on your computer.</p></div>
+      </div>
+    </section>
+
+    <section id="safety">
+      <h2>You approve everything that changes your code.</h2>
+      <p class="sub">Agents are fast, so Kestrel makes the checkpoints explicit.</p>
+      <ul class="rules">
+        <li><div><strong>Edits go through review.</strong><span>Agent changes are shown as a diff before they become part of your project's committed state.</span></div></li>
+        <li><div><strong>Commands are shown first.</strong><span>Shell commands from the agent are displayed before they run, unless you turn on auto-approve.</span></div></li>
+        <li><div><strong>Nothing commits itself.</strong><span>Kestrel only commits when you click Commit.</span></div></li>
+        <li><div><strong>Keys stay in the OS credential store.</strong><span>Provider API keys are not saved in the database or in plain text files.</span></div></li>
+      </ul>
+    </section>
+
+    <section id="download">
+      <h2>Get the Windows alpha.</h2>
+      <p class="sub">Kestrel needs Git and the <code>claude</code> CLI installed. The installer link will appear here when the first alpha build is published.</p>
+      <a class="btn" href="#download" aria-disabled="true">Installer coming soon</a>
+      <p class="note">macOS and Linux aren't planned for the first release.</p>
+    </section>
+  </main>
+
+  <footer><span>Kestrel</span><span>kestrelai.online</span></footer>
+</div>
+
+<script>
+(function(){
+  var files=[].slice.call(document.querySelectorAll('.file'));
+  var commit=document.getElementById('commit'), status=document.getElementById('status'), msg=document.getElementById('msg');
+  function count(s){return files.filter(function(f){return f.dataset.state===s}).length}
+  function update(){
+    var acc=count('accepted'), rej=count('rejected'), pend=files.length-acc-rej;
+    commit.disabled=acc===0||pend>0;
+    status.textContent=pend>0
+      ? pend+' file'+(pend>1?'s':'')+' left to review.'
+      : acc===0 ? 'All files rejected. Nothing to commit.'
+      : 'Ready to commit '+acc+' file'+(acc>1?'s':'')+(rej?' ('+rej+' rejected)':'')+'.';
+  }
+  files.forEach(function(f){
+    var a=f.querySelector('.acc'), r=f.querySelector('.rej');
+    function set(s){f.dataset.state=s;a.setAttribute('aria-pressed',s==='accepted');r.setAttribute('aria-pressed',s==='rejected');update();}
+    a.onclick=function(){set('accepted')}; r.onclick=function(){set('rejected')};
+  });
+  commit.onclick=function(){
+    var n=count('accepted');
+    var text='Committed '+n+' file'+(n>1?'s':'')+': "'+(msg.value.trim()||'Update')+'"';
+    files.forEach(function(f){f.dataset.state='pending';f.querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed','false')})});
+    commit.disabled=true;
+    status.textContent=text;
+  };
+  update();
+})();
+</script>
+</body>
+</html>
