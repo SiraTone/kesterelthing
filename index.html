@@ -1,344 +1,217 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Kestrel</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
-
 <style>
-/* dark-first streaming UI — accent green, live red, mono data labels */
 :root {
-  --bg: #0b0e12;
-  --surface: #161b23;
-  --raise: #1e252f;
-  --line: #272f3a;
-  --text: #eef1f5;
-  --muted: #8c96a5;
-  --subtle: #4a5568;
-  --accent: #6fcfa6;
-  --on-accent: #04140d;
-  --live: #ff4545;
+  --bg: #0b0e12; --surface: #161b23; --raise: #1e252f; --line: #272f3a;
+  --text: #eef1f5; --muted: #8c96a5; --subtle: #4a5568;
+  --accent: #6fcfa6; --on-accent: #04140d; --live: #ff4545;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-    --bg: #eef1f5;
-    --surface: #ffffff;
-    --raise: #f4f6f9;
-    --line: #d6dce5;
-    --text: #14181f;
-    --muted: #5b6574;
-    --subtle: #a0aab5;
-    --accent: #0B3D2E;
-    --on-accent: #ffffff;
-    --live: #d42020;
-    color-scheme: light;
+    --bg: #eef1f5; --surface: #ffffff; --raise: #f4f6f9; --line: #d6dce5;
+    --text: #14181f; --muted: #5b6574; --subtle: #a0aab5;
+    --accent: #0B3D2E; --on-accent: #ffffff; --live: #d42020; color-scheme: light;
   }
 }
 :root[data-theme="light"] {
-  --bg: #eef1f5;
-  --surface: #ffffff;
-  --raise: #f4f6f9;
-  --line: #d6dce5;
-  --text: #14181f;
-  --muted: #5b6574;
-  --subtle: #a0aab5;
-  --accent: #0B3D2E;
-  --on-accent: #ffffff;
-  --live: #d42020;
-  color-scheme: light;
+  --bg: #eef1f5; --surface: #ffffff; --raise: #f4f6f9; --line: #d6dce5;
+  --text: #14181f; --muted: #5b6574; --subtle: #a0aab5;
+  --accent: #0B3D2E; --on-accent: #ffffff; --live: #d42020; color-scheme: light;
 }
-
 *, *::before, *::after { box-sizing: border-box }
 html, body { margin: 0 }
 body {
-  background: var(--bg);
-  color: var(--text);
+  background: var(--bg); color: var(--text);
   font: 400 16px/1.6 "Schibsted Grotesk", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 0;
 }
 a { color: inherit; text-decoration: none }
 img { max-width: 100% }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px }
-
 .page { max-width: 1160px; margin: 0 auto }
 
-/* sticky header */
 body::before {
-  content: "";
-  position: fixed;
-  inset: 0 0 auto;
-  height: env(safe-area-inset-top, 0px);
-  z-index: 60;
-  background: var(--bg);
+  content: ""; position: fixed; inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bg);
 }
 header {
-  position: sticky;
-  top: env(safe-area-inset-top, 0px);
-  z-index: 50;
-  background: var(--bg);
-  border-bottom: 1px solid var(--line);
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50;
+  background: var(--bg); border-bottom: 1px solid var(--line);
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.header-inner {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  height: 56px;
-  max-width: 1160px;
-  margin: 0 auto;
-}
-.brand {
-  font: 800 21px/1 "Schibsted Grotesk", sans-serif;
-  letter-spacing: -.04em;
-  flex: none;
-}
+.header-inner { display: flex; align-items: center; gap: 16px; height: 56px; max-width: 1160px; margin: 0 auto }
+.brand { font: 800 21px/1 "Schibsted Grotesk", sans-serif; letter-spacing: -.04em; flex: none }
 .brand em { font-style: normal; color: var(--accent) }
-
-.cats {
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  flex: 1;
-  min-width: 0;
-}
+.cats { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0 }
 .cats::-webkit-scrollbar { display: none }
 .cat {
-  flex: none;
-  padding: 5px 13px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--muted);
-  font: 500 13px "Schibsted Grotesk", sans-serif;
-  cursor: pointer;
-  text-transform: capitalize;
-  white-space: nowrap;
+  flex: none; padding: 5px 13px; border-radius: 999px; border: 1px solid transparent;
+  background: transparent; color: var(--muted); font: 500 13px "Schibsted Grotesk", sans-serif;
+  cursor: pointer; text-transform: capitalize; white-space: nowrap;
   transition: color .15s, background .15s, border-color .15s;
 }
 .cat:hover { color: var(--text); border-color: var(--line) }
 .cat.active { background: var(--accent); color: var(--on-accent); border-color: transparent }
+.stream-count { font: 500 12px "JetBrains Mono", monospace; color: var(--subtle); flex: none; white-space: nowrap }
 
-.stream-count {
-  font: 500 12px "JetBrains Mono", monospace;
-  color: var(--subtle);
-  flex: none;
-  white-space: nowrap;
-}
-
-/* main */
 main { padding-block: 28px }
-
-/* state screens */
-.state {
-  text-align: center;
-  padding: 80px 20px;
-  color: var(--muted);
-}
+.state { text-align: center; padding: 80px 20px; color: var(--muted) }
 .state-icon { font-size: 44px; margin-bottom: 14px; line-height: 1 }
 .state h2 { margin: 0 0 8px; font-size: 20px; color: var(--text); letter-spacing: -.02em }
 .state p { margin: 0 auto; font-size: 14px; max-width: 30em; color: var(--muted) }
 .retry-btn {
-  margin-top: 20px;
-  padding: 9px 20px;
-  border-radius: 9px;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--text);
-  font: 600 14px "Schibsted Grotesk", sans-serif;
-  cursor: pointer;
+  margin-top: 20px; padding: 9px 20px; border-radius: 9px;
+  border: 1px solid var(--line); background: transparent;
+  color: var(--text); font: 600 14px "Schibsted Grotesk", sans-serif; cursor: pointer;
 }
 .retry-btn:hover { border-color: var(--muted) }
 
-/* grid */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px }
 @media (max-width: 860px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
 @media (max-width: 520px)  { .grid { grid-template-columns: minmax(0, 1fr); gap: 10px } }
 
-/* card */
 .card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  overflow: hidden; display: flex; flex-direction: column;
   transition: border-color .18s, box-shadow .18s;
 }
 .card:hover { border-color: var(--muted); box-shadow: 0 8px 28px -8px rgba(0,0,0,.45) }
 
 .thumb {
-  aspect-ratio: 16/9;
-  background: var(--raise);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  aspect-ratio: 16/9; background: var(--raise); position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 .thumb-img { width: 100%; height: 100%; object-fit: cover; display: block }
 .thumb-emoji { font-size: 40px; line-height: 1; opacity: .4; user-select: none }
 .thumb-img[hidden] { display: none }
 .overlay-gfx {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.6));
-  pointer-events: none;
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.6)); pointer-events: none;
 }
+.thumb-play {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0); transition: background .2s; pointer-events: none;
+}
+.thumb:hover .thumb-play { background: rgba(0,0,0,.3) }
+.play-circle {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(255,255,255,.15); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transform: scale(.85); transition: opacity .2s, transform .2s;
+}
+.thumb:hover .play-circle { opacity: 1; transform: scale(1) }
 
 .live-badge {
-  position: absolute;
-  top: 10px; left: 10px;
-  background: var(--live);
-  color: #fff;
-  font: 700 10px/1 "Schibsted Grotesk", sans-serif;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  padding: 4px 8px;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  position: absolute; top: 10px; left: 10px; background: var(--live); color: #fff;
+  font: 700 10px/1 "Schibsted Grotesk", sans-serif; letter-spacing: .08em; text-transform: uppercase;
+  padding: 4px 8px; border-radius: 5px; display: flex; align-items: center; gap: 5px;
 }
-.live-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: #fff;
-  flex: none;
-  animation: blink 1.4s ease-in-out infinite;
-}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; flex: none; animation: blink 1.4s ease-in-out infinite }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
-
 .soon-badge {
-  position: absolute;
-  top: 10px; left: 10px;
-  background: rgba(0,0,0,.55);
-  color: var(--text);
-  font: 500 11px/1 "JetBrains Mono", monospace;
-  padding: 4px 8px;
-  border-radius: 5px;
-  backdrop-filter: blur(4px);
+  position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,.55); color: var(--text);
+  font: 500 11px/1 "JetBrains Mono", monospace; padding: 4px 8px; border-radius: 5px; backdrop-filter: blur(4px);
 }
-
-.quality-row {
-  position: absolute;
-  bottom: 8px; right: 8px;
-  display: flex;
-  gap: 4px;
-}
+.quality-row { position: absolute; bottom: 8px; right: 8px; display: flex; gap: 4px }
 .q-chip {
-  background: rgba(0,0,0,.55);
-  color: #fff;
-  font: 500 10px "JetBrains Mono", monospace;
-  padding: 3px 6px;
-  border-radius: 4px;
-  backdrop-filter: blur(4px);
+  background: rgba(0,0,0,.55); color: #fff;
+  font: 500 10px "JetBrains Mono", monospace; padding: 3px 6px; border-radius: 4px; backdrop-filter: blur(4px);
 }
 
-/* card body */
-.info {
-  padding: 13px 15px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
-.cat-tag {
-  font: 700 10px/1 "Schibsted Grotesk", sans-serif;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-.stream-name {
-  font: 700 15px/1.25 "Schibsted Grotesk", sans-serif;
-  letter-spacing: -.02em;
-  color: var(--text);
-  text-wrap: balance;
-  margin: 0;
-}
-.league {
-  font-size: 12px;
-  color: var(--muted);
-}
-.card-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 10px 15px 13px;
-  margin-top: auto;
-}
-.match-time {
-  font: 500 11px "JetBrains Mono", monospace;
-  color: var(--subtle);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.info { padding: 13px 15px 0; display: flex; flex-direction: column; gap: 4px; flex: 1 }
+.cat-tag { font: 700 10px/1 "Schibsted Grotesk", sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--accent) }
+.stream-name { font: 700 15px/1.25 "Schibsted Grotesk", sans-serif; letter-spacing: -.02em; color: var(--text); text-wrap: balance; margin: 0 }
+.league { font-size: 12px; color: var(--muted) }
+.card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 15px 13px; margin-top: auto }
+.match-time { font: 500 11px "JetBrains Mono", monospace; color: var(--subtle); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 .watch-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--accent);
-  color: var(--on-accent);
-  font: 700 13px "Schibsted Grotesk", sans-serif;
-  padding: 7px 14px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  flex: none;
-  transition: opacity .15s;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent); color: var(--on-accent); font: 700 13px "Schibsted Grotesk", sans-serif;
+  padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer; flex: none; transition: opacity .15s;
 }
 .watch-btn:hover { opacity: .82 }
-
-.sources-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  padding: 0 15px 13px;
-}
-.src-link {
-  padding: 3px 9px;
-  border-radius: 6px;
-  border: 1px solid var(--line);
-  color: var(--muted);
-  font: 500 11px "JetBrains Mono", monospace;
+.sources-row { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 15px 13px }
+.src-btn {
+  padding: 3px 9px; border-radius: 6px; border: 1px solid var(--line); background: transparent;
+  color: var(--muted); font: 500 11px "JetBrains Mono", monospace; cursor: pointer;
   transition: border-color .15s, color .15s;
 }
-.src-link:hover { border-color: var(--muted); color: var(--text) }
+.src-btn:hover { border-color: var(--muted); color: var(--text) }
 
-/* footer */
 footer {
-  border-top: 1px solid var(--line);
-  padding: 22px 0 36px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--muted);
+  border-top: 1px solid var(--line); padding: 22px 0 36px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 10px; font-size: 13px; color: var(--muted);
 }
 footer a:hover { color: var(--text) }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition: none !important; animation: none !important }
+/* ── modal ── */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(6px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 16px; opacity: 0; pointer-events: none; transition: opacity .2s;
 }
+.modal-backdrop.open { opacity: 1; pointer-events: auto }
+.modal {
+  width: 100%; max-width: 960px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+  transform: translateY(10px); transition: transform .2s; max-height: calc(100dvh - 32px);
+}
+.modal-backdrop.open .modal { transform: translateY(0) }
+.modal-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; border-bottom: 1px solid var(--line); flex: none;
+}
+.modal-title { font: 700 15px "Schibsted Grotesk", sans-serif; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.modal-live { background: var(--live); color: #fff; font: 700 10px "Schibsted Grotesk", sans-serif; letter-spacing: .08em; text-transform: uppercase; padding: 3px 7px; border-radius: 4px; flex: none }
+.modal-close {
+  width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: transparent;
+  color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex: none; transition: border-color .15s, color .15s;
+}
+.modal-close:hover { border-color: var(--muted); color: var(--text) }
+.player-wrap { position: relative; width: 100%; background: #000; aspect-ratio: 16/9 }
+.player-wrap video, .player-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none }
+.player-msg {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 12px;
+  color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+}
+.player-msg svg { opacity: .4 }
+.open-tab-btn {
+  padding: 8px 18px; border-radius: 8px; border: 1px solid var(--line); background: transparent;
+  color: var(--text); font: 600 13px "Schibsted Grotesk", sans-serif; cursor: pointer; transition: border-color .15s;
+}
+.open-tab-btn:hover { border-color: var(--muted) }
+.modal-sources { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-top: 1px solid var(--line); flex: none }
+.modal-src-btn {
+  padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line); background: transparent;
+  color: var(--muted); font: 500 11px "JetBrains Mono", monospace; cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.modal-src-btn:hover { border-color: var(--muted); color: var(--text) }
+.modal-src-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(111,207,166,.08) }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important } }
 </style>
+</head>
+<body>
 
 <header>
   <div class="header-inner">
-    <span class="brand">k<em>·</em>strel</span>
+    <span class="brand">k<em>&middot;</em>strel</span>
     <div class="cats" id="cats" role="tablist" aria-label="Sport categories"></div>
     <span class="stream-count" id="count" aria-live="polite"></span>
   </div>
@@ -346,277 +219,274 @@ footer a:hover { color: var(--text) }
 
 <div class="page">
   <main id="main">
-    <div class="state" id="loading">
+    <div class="state">
       <div class="state-icon">📡</div>
-      <h2>Finding live streams…</h2>
-      <p>Checking what's on right now.</p>
+      <h2>Finding live streams&hellip;</h2>
+      <p>Checking what&rsquo;s on right now.</p>
     </div>
   </main>
-
   <footer>
-    <span>kestrel · sports streams</span>
+    <span>kestrel &middot; sports streams</span>
     <a href="https://strmfree.st" target="_blank" rel="noopener">powered by StreamFree</a>
   </footer>
 </div>
 
+<div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-label="Stream player">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title"></span>
+      <span class="modal-live" id="modal-live" hidden>LIVE</span>
+      <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="player-wrap" id="player-wrap"></div>
+    <div class="modal-sources" id="modal-sources"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.7/hls.min.js" integrity="sha512-LMPOAjBLAiNMIjz1MXSJe4MHBv/QMkKdRFRa8HKf4L1A5jUfhVhE8FkJtCBF0gp4TkmOkLCTgxDxhXH/a5Mg==" crossorigin="anonymous"></script>
 <script>
 (function () {
   var API = 'https://streamfree.top/api/v1';
   var CACHE_TTL = 60 * 1000;
-  var EMOJI = {
-    soccer:'⚽', basketball:'🏀', hockey:'🏒', combat:'🥊',
-    baseball:'⚾', football:'🏈', racing:'🏎', tennis:'🎾', cricket:'🏏'
-  };
+  var EMOJI = { soccer:'⚽', basketball:'🏀', hockey:'🏒', combat:'🥊', baseball:'⚾', football:'🏈', racing:'🏎', tennis:'🎾', cricket:'🏏' };
 
   var state = { category: 'all', streams: [], categories: [], ts: 0 };
-  var main = document.getElementById('main');
-  var catsEl = document.getElementById('cats');
-  var countEl = document.getElementById('count');
+  var mainEl    = document.getElementById('main');
+  var catsEl    = document.getElementById('cats');
+  var countEl   = document.getElementById('count');
+  var modalEl   = document.getElementById('modal');
+  var titleEl   = document.getElementById('modal-title');
+  var liveEl    = document.getElementById('modal-live');
+  var closeBtn  = document.getElementById('modal-close');
+  var playerWrap = document.getElementById('player-wrap');
+  var sourcesEl  = document.getElementById('modal-sources');
+  var hlsInst   = null;
+  var activeSrc = null;
 
-  function fmt(ts) {
-    if (!ts) return '';
-    var d = new Date(ts * 1000);
-    var now = Date.now();
-    var diff = ts * 1000 - now;
-    if (Math.abs(diff) < 4 * 60 * 60 * 1000) {
-      if (diff < 0) return 'started ' + formatRel(Math.abs(diff)) + ' ago';
-      return 'in ' + formatRel(diff);
-    }
-    return d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })
-      + ' · ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-  }
-  function formatRel(ms) {
-    var m = Math.round(ms / 60000);
-    if (m < 60) return m + 'm';
-    return Math.round(m / 60) + 'h';
-  }
-  function isLive(ts) {
-    if (!ts) return true;
-    var now = Date.now() / 1000;
-    return ts <= now + 5 * 60;
-  }
+  // ── player ──
+  function openModal(stream) {
+    var sources = stream.sources || [];
+    titleEl.textContent = stream.name;
+    liveEl.hidden = !isLive(stream.match_timestamp);
 
-  function qualityLabel(url) {
-    var m = url.match(/(\d{3,4}p\d*)/);
-    return m ? m[1].replace(/p(\d+)$/, 'p') : null;
-  }
-
-  function bestSource(sources) {
-    var pref = ['1080p', '720p', '540p', '480p', '360p'];
-    for (var i = 0; i < pref.length; i++) {
-      var q = pref[i];
-      for (var j = 0; j < sources.length; j++) {
-        if (qualityLabel(sources[j]) === q) return sources[j];
-      }
-    }
-    return sources[0] || null;
-  }
-
-  function renderCard(s) {
-    var live = isLive(s.match_timestamp);
-    var emoji = EMOJI[s.category] || '📺';
-    var sources = s.sources || [];
-    var best = bestSource(sources);
-    var qualities = sources.map(qualityLabel).filter(Boolean);
-    var uniqueQ = qualities.filter(function (q, i, a) { return a.indexOf(q) === i; });
-
-    var div = document.createElement('div');
-    div.className = 'card';
-
-    // thumb
-    var thumbDiv = document.createElement('div');
-    thumbDiv.className = 'thumb';
-
-    if (s.thumbnail_url) {
-      var img = document.createElement('img');
-      img.className = 'thumb-img';
-      img.alt = s.name;
-      img.onerror = function () { this.hidden = true; fallback.hidden = false; };
-      img.src = s.thumbnail_url;
-      thumbDiv.appendChild(img);
-    }
-    var fallback = document.createElement('div');
-    fallback.className = 'thumb-emoji';
-    fallback.textContent = emoji;
-    fallback.hidden = !!s.thumbnail_url;
-    thumbDiv.appendChild(fallback);
-
-    var gfx = document.createElement('div');
-    gfx.className = 'overlay-gfx';
-    thumbDiv.appendChild(gfx);
-
-    if (live) {
-      var badge = document.createElement('div');
-      badge.className = 'live-badge';
-      badge.innerHTML = '<span class="live-dot"></span>LIVE';
-      thumbDiv.appendChild(badge);
-    } else if (s.match_timestamp) {
-      var soon = document.createElement('div');
-      soon.className = 'soon-badge';
-      soon.textContent = fmt(s.match_timestamp);
-      thumbDiv.appendChild(soon);
-    }
-
-    if (uniqueQ.length) {
-      var qRow = document.createElement('div');
-      qRow.className = 'quality-row';
-      uniqueQ.slice(0, 3).forEach(function (q) {
-        var chip = document.createElement('span');
-        chip.className = 'q-chip';
-        chip.textContent = q;
-        qRow.appendChild(chip);
-      });
-      thumbDiv.appendChild(qRow);
-    }
-    div.appendChild(thumbDiv);
-
-    // info
-    var info = document.createElement('div');
-    info.className = 'info';
-    var catTag = document.createElement('div');
-    catTag.className = 'cat-tag';
-    catTag.textContent = (EMOJI[s.category] || '') + ' ' + (s.category || '');
-    info.appendChild(catTag);
-    var name = document.createElement('h3');
-    name.className = 'stream-name';
-    name.textContent = s.name;
-    info.appendChild(name);
-    if (s.league) {
-      var league = document.createElement('div');
-      league.className = 'league';
-      league.textContent = s.league;
-      info.appendChild(league);
-    }
-    div.appendChild(info);
-
-    var foot = document.createElement('div');
-    foot.className = 'card-foot';
-    var timeEl = document.createElement('span');
-    timeEl.className = 'match-time';
-    timeEl.textContent = live ? 'On now' : fmt(s.match_timestamp);
-    foot.appendChild(timeEl);
-
-    if (best) {
-      var btn = document.createElement('a');
-      btn.className = 'watch-btn';
-      btn.href = best;
-      btn.target = '_blank';
-      btn.rel = 'noopener';
-      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M2 1.5C2 .95 2.59.65 3.03.97l7 4.5a.75.75 0 0 1 0 1.06l-7 4.5C2.59 11.35 2 11.05 2 10.5v-9Z"/></svg>Watch';
-      foot.appendChild(btn);
-    }
-    div.appendChild(foot);
-
+    sourcesEl.innerHTML = '';
     if (sources.length > 1) {
-      var srcRow = document.createElement('div');
-      srcRow.className = 'sources-row';
       sources.forEach(function (src) {
         var q = qualityLabel(src) || 'stream';
-        var a = document.createElement('a');
-        a.className = 'src-link';
-        a.href = src;
-        a.target = '_blank';
-        a.rel = 'noopener';
-        a.textContent = q;
-        srcRow.appendChild(a);
+        var btn = document.createElement('button');
+        btn.className = 'modal-src-btn';
+        btn.textContent = q;
+        btn.dataset.src = src;
+        btn.addEventListener('click', function () {
+          sourcesEl.querySelectorAll('.modal-src-btn').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          loadSource(src);
+        });
+        sourcesEl.appendChild(btn);
+      });
+    }
+
+    var best = bestSource(sources);
+    if (best) {
+      var firstBtn = sourcesEl.querySelector('.modal-src-btn');
+      if (firstBtn) firstBtn.classList.add('active');
+      loadSource(best);
+    } else {
+      playerWrap.innerHTML = '<div class="player-msg"><span>No source available</span></div>';
+    }
+
+    modalEl.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    closeBtn.focus();
+  }
+
+  function loadSource(src) {
+    if (src === activeSrc) return;
+    activeSrc = src;
+    destroyPlayer();
+
+    var isHls = /\.m3u8(\?|$)/i.test(src);
+
+    if (isHls && window.Hls && Hls.isSupported()) {
+      var vid = document.createElement('video');
+      vid.controls = true; vid.autoplay = true; vid.playsInline = true;
+      playerWrap.appendChild(vid);
+      hlsInst = new Hls({ enableWorker: true, lowLatencyMode: true });
+      hlsInst.loadSource(src);
+      hlsInst.attachMedia(vid);
+      hlsInst.on(Hls.Events.ERROR, function (e, data) { if (data.fatal) showFallback(src); });
+    } else if (isHls && document.createElement('video').canPlayType('application/vnd.apple.mpegurl')) {
+      var vid = document.createElement('video');
+      vid.controls = true; vid.autoplay = true; vid.playsInline = true; vid.src = src;
+      playerWrap.appendChild(vid);
+    } else {
+      var iframe = document.createElement('iframe');
+      iframe.src = src; iframe.allowFullscreen = true;
+      iframe.allow = 'autoplay; fullscreen; picture-in-picture'; iframe.scrolling = 'no';
+      playerWrap.appendChild(iframe);
+    }
+  }
+
+  function showFallback(src) {
+    destroyPlayer();
+    var msg = document.createElement('div'); msg.className = 'player-msg';
+    msg.innerHTML = "<span>This stream can’t be embedded.</span>";
+    var btn = document.createElement('button'); btn.className = 'open-tab-btn'; btn.textContent = 'Open stream →';
+    btn.addEventListener('click', function () { window.open(src, '_blank', 'noopener'); });
+    msg.appendChild(btn); playerWrap.appendChild(msg);
+  }
+
+  function destroyPlayer() {
+    if (hlsInst) { try { hlsInst.destroy(); } catch(e){} hlsInst = null; }
+    playerWrap.innerHTML = ''; activeSrc = null;
+  }
+
+  function closeModal() { modalEl.classList.remove('open'); document.body.style.overflow = ''; destroyPlayer(); }
+  closeBtn.addEventListener('click', closeModal);
+  modalEl.addEventListener('click', function (e) { if (e.target === modalEl) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modalEl.classList.contains('open')) closeModal(); });
+
+  // ── helpers ──
+  function fmt(ts) {
+    if (!ts) return '';
+    var diff = ts * 1000 - Date.now();
+    if (Math.abs(diff) < 4*60*60*1000) return diff < 0 ? 'started '+fmtRel(Math.abs(diff))+' ago' : 'in '+fmtRel(diff);
+    var d = new Date(ts*1000);
+    return d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+' · '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  }
+  function fmtRel(ms) { var m=Math.round(ms/60000); return m<60?m+'m':Math.round(m/60)+'h'; }
+  function isLive(ts) { return !ts || ts <= Date.now()/1000+5*60; }
+  function qualityLabel(url) { var m=url.match(/(\d{3,4}p)/i); return m?m[1].toLowerCase():null; }
+  function bestSource(sources) {
+    var pref=['1080p','720p','540p','480p','360p'];
+    for(var i=0;i<pref.length;i++) for(var j=0;j<sources.length;j++) if(qualityLabel(sources[j])===pref[i]) return sources[j];
+    return sources[0]||null;
+  }
+
+  // ── card ──
+  function renderCard(s) {
+    var live = isLive(s.match_timestamp);
+    var emoji = EMOJI[s.category]||'📺';
+    var sources = s.sources||[];
+    var best = bestSource(sources);
+    var qualities = sources.map(qualityLabel).filter(Boolean).filter(function(q,i,a){return a.indexOf(q)===i;});
+
+    var div = document.createElement('div'); div.className='card';
+
+    var thumb = document.createElement('div'); thumb.className='thumb';
+    thumb.setAttribute('role','button'); thumb.setAttribute('tabindex','0');
+    thumb.setAttribute('aria-label','Watch '+s.name);
+    thumb.addEventListener('click', function(){openModal(s);});
+    thumb.addEventListener('keydown', function(e){if(e.key==='Enter'||e.key===' ')openModal(s);});
+
+    if (s.thumbnail_url) {
+      var img=document.createElement('img'); img.className='thumb-img'; img.alt=s.name;
+      img.onerror=function(){this.hidden=true;fallback.hidden=false;}; img.src=s.thumbnail_url; thumb.appendChild(img);
+    }
+    var fallback=document.createElement('div'); fallback.className='thumb-emoji'; fallback.textContent=emoji; fallback.hidden=!!s.thumbnail_url; thumb.appendChild(fallback);
+    thumb.appendChild(Object.assign(document.createElement('div'),{className:'overlay-gfx'}));
+
+    var playOverlay=document.createElement('div'); playOverlay.className='thumb-play';
+    var circle=document.createElement('div'); circle.className='play-circle';
+    circle.innerHTML='<svg width="16" height="16" viewBox="0 0 12 12" fill="white"><path d="M2 1.5C2 .95 2.59.65 3.03.97l7 4.5a.75.75 0 0 1 0 1.06l-7 4.5C2.59 11.35 2 11.05 2 10.5v-9Z"/></svg>';
+    playOverlay.appendChild(circle); thumb.appendChild(playOverlay);
+
+    if (live) {
+      var badge=document.createElement('div'); badge.className='live-badge'; badge.innerHTML='<span class="live-dot"></span>LIVE'; thumb.appendChild(badge);
+    } else if (s.match_timestamp) {
+      var soon=document.createElement('div'); soon.className='soon-badge'; soon.textContent=fmt(s.match_timestamp); thumb.appendChild(soon);
+    }
+    if (qualities.length) {
+      var qRow=document.createElement('div'); qRow.className='quality-row';
+      qualities.slice(0,3).forEach(function(q){var c=document.createElement('span');c.className='q-chip';c.textContent=q;qRow.appendChild(c);});
+      thumb.appendChild(qRow);
+    }
+    div.appendChild(thumb);
+
+    var info=document.createElement('div'); info.className='info';
+    var catTag=document.createElement('div'); catTag.className='cat-tag'; catTag.textContent=(EMOJI[s.category]||'')+' '+(s.category||''); info.appendChild(catTag);
+    var name=document.createElement('h3'); name.className='stream-name'; name.textContent=s.name; info.appendChild(name);
+    if(s.league){var lg=document.createElement('div');lg.className='league';lg.textContent=s.league;info.appendChild(lg);}
+    div.appendChild(info);
+
+    var foot=document.createElement('div'); foot.className='card-foot';
+    var timeEl=document.createElement('span'); timeEl.className='match-time'; timeEl.textContent=live?'On now':fmt(s.match_timestamp); foot.appendChild(timeEl);
+    if(best){var wb=document.createElement('button');wb.className='watch-btn';wb.innerHTML='<svg width="13" height="13" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M2 1.5C2 .95 2.59.65 3.03.97l7 4.5a.75.75 0 0 1 0 1.06l-7 4.5C2.59 11.35 2 11.05 2 10.5v-9Z"/></svg>Watch';wb.addEventListener('click',function(){openModal(s);});foot.appendChild(wb);}
+    div.appendChild(foot);
+
+    if(sources.length>1){
+      var srcRow=document.createElement('div');srcRow.className='sources-row';
+      sources.forEach(function(src){
+        var q=qualityLabel(src)||'stream';
+        var b=document.createElement('button');b.className='src-btn';b.textContent=q;
+        b.addEventListener('click',function(){openModal(s);setTimeout(function(){
+          var btns=sourcesEl.querySelectorAll('.modal-src-btn');
+          btns.forEach(function(mb){if(mb.dataset.src===src){mb.classList.add('active');loadSource(src);}else{mb.classList.remove('active');}});
+        },50);});
+        srcRow.appendChild(b);
       });
       div.appendChild(srcRow);
     }
-
     return div;
   }
 
   function renderGrid(streams) {
-    if (!streams.length) {
-      var catName = state.category === 'all' ? 'any sport' : state.category;
-      main.innerHTML = '<div class="state"><div class="state-icon">' +
-        (EMOJI[state.category] || '📺') + '</div>' +
-        '<h2>Nothing live right now</h2>' +
-        '<p>No streams found for ' + catName + '. Check back closer to match time.</p></div>';
-      countEl.textContent = '';
-      return;
+    if(!streams.length){
+      var cat=state.category==='all'?'any sport':state.category;
+      mainEl.innerHTML='<div class="state"><div class="state-icon">'+(EMOJI[state.category]||'📺')+'</div><h2>Nothing live right now</h2><p>No streams found for '+cat+'. Check back closer to match time.</p></div>';
+      countEl.textContent=''; return;
     }
-
-    var frag = document.createDocumentFragment();
-    var grid = document.createElement('div');
-    grid.className = 'grid';
-    streams.forEach(function (s) { grid.appendChild(renderCard(s)); });
-    frag.appendChild(grid);
-    main.innerHTML = '';
-    main.appendChild(frag);
-    countEl.textContent = streams.length + ' stream' + (streams.length === 1 ? '' : 's');
+    var grid=document.createElement('div'); grid.className='grid';
+    streams.forEach(function(s){grid.appendChild(renderCard(s));});
+    mainEl.innerHTML=''; mainEl.appendChild(grid);
+    countEl.textContent=streams.length+' stream'+(streams.length===1?'':'s');
   }
 
-  function filter() {
-    var streams = state.category === 'all'
-      ? state.streams
-      : state.streams.filter(function (s) { return s.category === state.category; });
+  function filter(){
+    var streams=state.category==='all'?state.streams:state.streams.filter(function(s){return s.category===state.category;});
     renderGrid(streams);
   }
 
-  function buildCats(categories) {
-    catsEl.innerHTML = '';
-    var all = ['all'].concat(categories);
-    all.forEach(function (c) {
-      var btn = document.createElement('button');
-      btn.className = 'cat' + (c === state.category ? ' active' : '');
-      btn.type = 'button';
-      btn.role = 'tab';
-      btn.setAttribute('aria-selected', c === state.category ? 'true' : 'false');
-      btn.textContent = c === 'all' ? 'All' : (EMOJI[c] ? EMOJI[c] + ' ' : '') + c;
-      btn.addEventListener('click', function () {
-        state.category = c;
-        catsEl.querySelectorAll('.cat').forEach(function (b) {
-          b.classList.remove('active');
-          b.setAttribute('aria-selected', 'false');
-        });
-        btn.classList.add('active');
-        btn.setAttribute('aria-selected', 'true');
-        filter();
+  function buildCats(categories){
+    catsEl.innerHTML='';
+    ['all'].concat(categories).forEach(function(c){
+      var btn=document.createElement('button');
+      btn.className='cat'+(c===state.category?' active':''); btn.type='button';
+      btn.setAttribute('role','tab'); btn.setAttribute('aria-selected',c===state.category?'true':'false');
+      btn.textContent=c==='all'?'All':(EMOJI[c]?EMOJI[c]+' ':'')+c;
+      btn.addEventListener('click',function(){
+        state.category=c;
+        catsEl.querySelectorAll('.cat').forEach(function(b){b.classList.remove('active');b.setAttribute('aria-selected','false');});
+        btn.classList.add('active'); btn.setAttribute('aria-selected','true'); filter();
       });
       catsEl.appendChild(btn);
     });
   }
 
-  function showError(msg) {
-    main.innerHTML = '<div class="state"><div class="state-icon">📡</div>' +
-      '<h2>Couldn\'t load streams</h2>' +
-      '<p>' + msg + '</p>' +
-      '<button class="retry-btn" id="retry">Try again</button></div>';
-    document.getElementById('retry').addEventListener('click', load);
-    countEl.textContent = '';
+  function showError(msg){
+    mainEl.innerHTML='<div class="state"><div class="state-icon">📡</div><h2>Couldn\'t load streams</h2><p>'+msg+'</p><button class="retry-btn" id="retry">Try again</button></div>';
+    document.getElementById('retry').addEventListener('click',load); countEl.textContent='';
   }
 
-  var loadingAt = 0;
-  function load() {
-    var now = Date.now();
-    if (state.ts && now - state.ts < CACHE_TTL) { filter(); return; }
-    main.innerHTML = '<div class="state" id="loading"><div class="state-icon">📡</div><h2>Finding live streams…</h2><p>Checking what’s on right now.</p></div>';
-    loadingAt = now;
-
-    var catsP = fetch(API + '/categories').then(function (r) { return r.json(); });
-    var streamsP = fetch(API + '/streams').then(function (r) { return r.json(); });
-
-    Promise.all([catsP, streamsP]).then(function (results) {
-      var cats = (results[0].categories || []);
-      var streams = (results[1].streams || []);
-      state.categories = cats;
-      state.streams = streams.sort(function (a, b) {
-        var al = isLive(a.match_timestamp) ? 0 : 1;
-        var bl = isLive(b.match_timestamp) ? 0 : 1;
-        if (al !== bl) return al - bl;
-        return (a.match_timestamp || 0) - (b.match_timestamp || 0);
+  function load(){
+    var now=Date.now();
+    if(state.ts&&now-state.ts<CACHE_TTL){filter();return;}
+    mainEl.innerHTML='<div class="state"><div class="state-icon">📡</div><h2>Finding live streams…</h2><p>Checking what’s on right now.</p></div>';
+    Promise.all([
+      fetch(API+'/categories').then(function(r){return r.json();}),
+      fetch(API+'/streams').then(function(r){return r.json();})
+    ]).then(function(res){
+      state.categories=res[0].categories||[];
+      state.streams=(res[1].streams||[]).sort(function(a,b){
+        var al=isLive(a.match_timestamp)?0:1,bl=isLive(b.match_timestamp)?0:1;
+        if(al!==bl)return al-bl; return(a.match_timestamp||0)-(b.match_timestamp||0);
       });
-      state.ts = Date.now();
-      buildCats(cats);
-      filter();
-    }).catch(function (err) {
-      showError('Could not reach the stream API. Make sure you’re online and try again.');
-    });
+      state.ts=Date.now(); buildCats(state.categories); filter();
+    }).catch(function(){showError('Could not reach the stream API. Make sure you’re online and try again.');});
   }
 
   load();
 })();
 </script>
-
-</body></html>
+</body>
+</html>
