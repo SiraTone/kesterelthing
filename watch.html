@@ -209,7 +209,60 @@ header {
   var API = 'https://streamfree.top/api/v1';
   var EMOJI = { soccer:'⚽', basketball:'🏀', hockey:'🏒', combat:'🥊', baseball:'⚾', football:'🏈', racing:'🏎', tennis:'🎾', cricket:'🏏' };
   var SPORT_LABELS = { soccer:'Soccer', basketball:'Basketball', hockey:'Hockey', combat:'Combat', baseball:'Baseball', football:'Football', racing:'Racing', tennis:'Tennis', cricket:'Cricket' };
+  var SPORT_HUE = { soccer:145, basketball:28, hockey:210, combat:0, baseball:40, football:155, racing:24, tennis:130, cricket:100 };
 
+  // ── thumbnail generator ──
+  function nameHue(str) {
+    var h = 0;
+    for (var i = 0; i < str.length; i++) h = (str.charCodeAt(i) + ((h << 5) - h)) & 0x7fffffff;
+    return h % 360;
+  }
+
+  function makeThumbnail(s) {
+    var W = 320, H = 180;
+    var canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext('2d');
+    var baseHue = SPORT_HUE[s.category] != null ? SPORT_HUE[s.category] : 220;
+    var vsMatch = (s.name || '').match(/^(.+?)\s+vs\.?\s+(.+)$/i);
+    var t1 = vsMatch ? vsMatch[1].trim() : '';
+    var t2 = vsMatch ? vsMatch[2].trim() : '';
+    var isVs = !!(t1 && t2);
+    function abbr(name) { return name.split(/\s+/).map(function(w){return(w[0]||'').toUpperCase();}).join('').slice(0,3)||name.slice(0,3).toUpperCase(); }
+    function truncate(str, n) { return str.length > n ? str.slice(0, n-1)+'…' : str; }
+    if (isVs) {
+      var h1=nameHue(t1), h2=nameHue(t2);
+      var g1=ctx.createLinearGradient(0,0,W*0.6,H);
+      g1.addColorStop(0,'hsl('+h1+',50%,28%)'); g1.addColorStop(1,'hsl('+h1+',45%,18%)');
+      ctx.fillStyle=g1; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(W*0.58,0); ctx.lineTo(W*0.42,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
+      var g2=ctx.createLinearGradient(W*0.4,0,W,H);
+      g2.addColorStop(0,'hsl('+h2+',45%,18%)'); g2.addColorStop(1,'hsl('+h2+',50%,28%)');
+      ctx.fillStyle=g2; ctx.beginPath(); ctx.moveTo(W*0.58,0); ctx.lineTo(W,0); ctx.lineTo(W,H); ctx.lineTo(W*0.42,H); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(W*0.58,0); ctx.lineTo(W*0.42,H); ctx.stroke();
+      ctx.font='bold 58px Arial,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle='rgba(255,255,255,0.12)';
+      ctx.fillText(abbr(t1),W*0.24,H*0.52); ctx.fillText(abbr(t2),W*0.76,H*0.52);
+      ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.beginPath(); ctx.arc(W/2,H/2,14,0,Math.PI*2); ctx.fill();
+      ctx.font='bold 10px Arial,sans-serif'; ctx.fillStyle='rgba(255,255,255,0.92)';
+      ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('VS',W/2,H/2);
+      ctx.fillStyle='rgba(0,0,0,0.45)'; ctx.fillRect(0,H-26,W,26);
+      ctx.font='bold 10px Arial,sans-serif'; ctx.fillStyle='rgba(255,255,255,0.82)'; ctx.textBaseline='middle';
+      ctx.textAlign='left'; ctx.fillText(truncate(t1,18),10,H-13);
+      ctx.textAlign='right'; ctx.fillText(truncate(t2,18),W-10,H-13);
+      if(s.league){ctx.font='10px Arial,sans-serif';ctx.fillStyle='rgba(255,255,255,0.4)';ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(truncate(s.league,36),W/2,8);}
+    } else {
+      var g=ctx.createLinearGradient(0,0,W,H);
+      g.addColorStop(0,'hsl('+baseHue+',40%,13%)'); g.addColorStop(1,'hsl('+baseHue+',35%,22%)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle='rgba(255,255,255,0.85)';
+      ctx.font='bold 14px Arial,sans-serif';
+      ctx.fillText(truncate(s.name||'',34),W/2,s.league?H/2-10:H/2);
+      if(s.league){ctx.font='11px Arial,sans-serif';ctx.fillStyle='rgba(255,255,255,0.42)';ctx.fillText(truncate(s.league,34),W/2,H/2+12);}
+    }
+    ctx.fillStyle='rgba(94,201,154,0.4)'; ctx.fillRect(0,H-3,W,3);
+    try{return canvas.toDataURL('image/jpeg',0.82);}catch(e){return '';}
+  }
 
   // ── params ──
   var params = new URLSearchParams(location.search);
@@ -325,6 +378,8 @@ header {
     var ogDesc=document.querySelector('meta[property="og:description"]');
     if(ogTitle)ogTitle.content=s.name+' · Kestrel Live';
     if(ogDesc)ogDesc.content=(s.league?s.league+' — ':'')+s.name+(live?' — LIVE NOW':'');
+    var ogImg=document.querySelector('meta[property="og:image"]');
+    if(ogImg){var thumb=makeThumbnail(s);if(thumb)ogImg.content=thumb;}
 
     // header
     document.getElementById('hd-title').textContent=s.name;
