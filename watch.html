@@ -11,24 +11,6 @@
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 
-<!-- ============================================================
-  FIREBASE CONFIG — replace with your own project values.
-  Create a free project at https://console.firebase.google.com/
-  Enable Realtime Database (start in test mode for quick setup).
-  Chat and viewer counts won't work until this is filled in.
-============================================================ -->
-<script>
-var FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  databaseURL:       "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId:         "YOUR_PROJECT",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID"
-};
-/* ----------------------------------------------------------- */
-</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -156,92 +138,6 @@ header {
 .share-btn:hover { border-color: var(--muted); color: var(--text) }
 .share-btn.copied { border-color: var(--accent); color: var(--accent) }
 
-/* ── chat column ── */
-.chat-col {
-  width: 320px; flex: none; position: sticky; top: 72px;
-  height: calc(100dvh - 92px); display: flex; flex-direction: column;
-  padding-top: 20px;
-}
-@media (max-width: 900px) {
-  .chat-col { width: 100%; position: static; height: auto; padding-top: 12px; padding-bottom: 20px }
-}
-
-.chat-box {
-  flex: 1; display: flex; flex-direction: column;
-  background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
-}
-.chat-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 15px; border-bottom: 1px solid var(--line); flex: none;
-}
-.chat-title { font: 700 13px "Schibsted Grotesk", sans-serif }
-.chat-user-badge {
-  font: 500 11px "JetBrains Mono", monospace; color: var(--accent);
-  background: rgba(94,201,154,.08); border: 1px solid rgba(94,201,154,.2);
-  padding: 3px 9px; border-radius: 5px;
-}
-
-.chat-msgs {
-  flex: 1; overflow-y: auto; padding: 10px 12px;
-  display: flex; flex-direction: column; gap: 2px;
-  scrollbar-width: thin; scrollbar-color: var(--line) transparent;
-  min-height: 0;
-}
-@media (max-width: 900px) { .chat-msgs { height: 300px } }
-.chat-msgs::-webkit-scrollbar { width: 4px }
-.chat-msgs::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px }
-
-.chat-msg {
-  display: flex; gap: 7px; align-items: flex-start; padding: 4px 6px; border-radius: 7px;
-  transition: background .1s; animation: fadeIn .2s ease-out;
-}
-@keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
-.chat-msg:hover { background: var(--raise) }
-.msg-name {
-  font: 700 11px "Schibsted Grotesk", sans-serif; color: var(--accent);
-  flex: none; white-space: nowrap; min-width: 0;
-}
-.msg-name.self { color: var(--blue, #4da3ff) }
-.msg-text { font: 400 13px "Schibsted Grotesk", sans-serif; word-break: break-word; flex: 1; min-width: 0 }
-.msg-ts { font: 400 10px "JetBrains Mono", monospace; color: var(--subtle); flex: none; margin-top: 2px }
-
-.chat-system {
-  text-align: center; font-size: 11px; color: var(--subtle); padding: 6px; font-family: "JetBrains Mono", monospace;
-}
-.chat-disabled {
-  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 8px; padding: 20px; text-align: center; color: var(--subtle); font-size: 13px;
-}
-.chat-disabled code {
-  font: 500 11px "JetBrains Mono", monospace;
-  background: var(--raise); padding: 3px 8px; border-radius: 5px;
-  color: var(--muted); display: block; margin-top: 4px;
-}
-
-.chat-input-row {
-  display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--line); flex: none;
-}
-.chat-input {
-  flex: 1; background: var(--raise); border: 1px solid var(--line); border-radius: 9px;
-  color: var(--text); font: 400 13px "Schibsted Grotesk", sans-serif;
-  padding: 8px 12px; outline: none; transition: border-color .15s; resize: none;
-}
-.chat-input::placeholder { color: var(--subtle) }
-.chat-input:focus { border-color: rgba(94,201,154,.4) }
-.chat-send {
-  width: 36px; height: 36px; border-radius: 9px; border: none;
-  background: var(--accent); color: var(--on-accent);
-  display: flex; align-items: center; justify-content: center;
-  flex: none; transition: opacity .15s; align-self: flex-end;
-}
-.chat-send:hover { opacity: .82 }
-.chat-send:disabled { opacity: .3 }
-
-.spam-warn {
-  padding: 6px 12px; background: rgba(255,61,61,.1); border-top: 1px solid rgba(255,61,61,.2);
-  font: 500 11px "JetBrains Mono", monospace; color: var(--live); flex: none;
-  display: none;
-}
 
 /* ── states ── */
 .full-state {
@@ -269,10 +165,6 @@ header {
     </div>
     <div class="hd-right">
       <span class="live-badge" id="live-badge" hidden><span class="ld"></span>LIVE</span>
-      <span class="viewer-count" id="viewer-count" hidden>
-        <svg class="viewer-icon" width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3a5 5 0 1 0 0 10A5 5 0 0 0 8 3Zm0 8.5A3.5 3.5 0 1 1 8 4.5a3.5 3.5 0 0 1 0 7ZM8 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
-        <span id="viewer-n">—</span>
-      </span>
     </div>
   </div>
 </header>
@@ -302,22 +194,6 @@ header {
     </div>
   </div>
 
-  <div class="chat-col">
-    <div class="chat-box" id="chat-box">
-      <div class="chat-header">
-        <span class="chat-title">Live Chat</span>
-        <span class="chat-user-badge" id="chat-username-badge"></span>
-      </div>
-      <div class="chat-msgs" id="chat-msgs"></div>
-      <div class="spam-warn" id="spam-warn"></div>
-      <div class="chat-input-row" id="chat-input-row">
-        <input class="chat-input" id="chat-input" type="text" maxlength="200" placeholder="Say something&hellip;" autocomplete="off">
-        <button class="chat-send" id="chat-send" aria-label="Send">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 7.1 2 1l1.6 6H10v2H3.6L2 15l12.5-6.9a1 1 0 0 0 0-1Z"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <div class="full-state" id="error-state" hidden>
@@ -328,64 +204,12 @@ header {
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.7/hls.min.js" integrity="sha512-LMPOAjBLAiNMIjz1MXSJe4MHBv/QMkKdRFRa8HKf4L1A5jUfhVhE8FkJtCBF0gp4TkmOkLCTgxDxhXH/a5Mg==" crossorigin="anonymous"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script>
 (function () {
   var API = 'https://streamfree.top/api/v1';
   var EMOJI = { soccer:'⚽', basketball:'🏀', hockey:'🏒', combat:'🥊', baseball:'⚾', football:'🏈', racing:'🏎', tennis:'🎾', cricket:'🏏' };
   var SPORT_LABELS = { soccer:'Soccer', basketball:'Basketball', hockey:'Hockey', combat:'Combat', baseball:'Baseball', football:'Football', racing:'Racing', tennis:'Tennis', cricket:'Cricket' };
 
-  // ── username generator ──
-  var ADJS  = ['Swift','Bold','Iron','Dark','Quick','Wild','Sharp','Cool','Bright','Stone','Silent','Rapid','Fierce','Calm','Brave','Epic','Slick','Icy','Grim','Flash'];
-  var NOUNS = ['Fox','Bear','Wolf','Hawk','Tiger','Panda','Eagle','Viper','Lynx','Drake','Raven','Cobra','Bison','Falcon','Moose','Shark','Lion','Orca','Jaguar','Rhino'];
-  function genUsername() {
-    var a=ADJS[Math.floor(Math.random()*ADJS.length)];
-    var n=NOUNS[Math.floor(Math.random()*NOUNS.length)];
-    var d=Math.floor(Math.random()*90)+10;
-    return a+n+d;
-  }
-  var username;
-  try { username=localStorage.getItem('kestrel_username')||null; } catch(e){}
-  if (!username) { username=genUsername(); try{localStorage.setItem('kestrel_username',username);}catch(e){} }
-
-  // ── anti-spam state ──
-  var lastMsgTime = 0;
-  var msgTimes = [];
-  var cooldownUntil = 0;
-  var lastMsgText = '';
-  var SPAM_INTERVAL = 3000;
-  var BURST_COUNT = 5;
-  var BURST_WINDOW = 20000;
-  var COOLDOWN_MS = 30000;
-  var BAD_WORDS = ['spam','fuck','shit','nigger','faggot'];
-
-  function checkSpam(text) {
-    var now = Date.now();
-    if (now < cooldownUntil) return 'Slow down! Wait '+ Math.ceil((cooldownUntil-now)/1000)+'s.';
-    if (now - lastMsgTime < SPAM_INTERVAL) return 'Too fast — wait a moment.';
-    if (text.trim() === lastMsgText) return "Don't repeat yourself.";
-    var lower = text.toLowerCase();
-    for (var i=0;i<BAD_WORDS.length;i++) if (lower.indexOf(BAD_WORDS[i])!==-1) return 'Message contains disallowed content.';
-    msgTimes = msgTimes.filter(function(t){return now-t<BURST_WINDOW;});
-    if (msgTimes.length >= BURST_COUNT) { cooldownUntil=now+COOLDOWN_MS; return 'Sending too fast. '+Math.ceil(COOLDOWN_MS/1000)+'s timeout.'; }
-    return null;
-  }
-  function recordSend(text) {
-    lastMsgTime=Date.now(); lastMsgText=text.trim();
-    msgTimes.push(lastMsgTime);
-  }
-
-  // ── Firebase ──
-  var FIREBASE_READY = false;
-  var db = null;
-  try {
-    if (typeof FIREBASE_CONFIG!=='undefined' && FIREBASE_CONFIG.databaseURL && !FIREBASE_CONFIG.databaseURL.includes('YOUR_PROJECT')) {
-      firebase.initializeApp(FIREBASE_CONFIG);
-      db = firebase.database();
-      FIREBASE_READY = true;
-    }
-  } catch(e) { console.warn('Firebase init failed', e); }
 
   // ── params ──
   var params = new URLSearchParams(location.search);
@@ -408,7 +232,6 @@ header {
     return d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+' · '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
   }
   function fmtRel(ms){var m=Math.round(ms/60000);return m<60?m+'m':Math.round(m/60)+'h';}
-  function fmtTime(ts){var d=new Date(ts);return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});}
 
   // ── player ──
   var hlsInst=null;
@@ -476,137 +299,6 @@ header {
     });
   }
 
-  // ── viewer count (Firebase presence) ──
-  var viewerRef=null;
-  var sessionRef=null;
-  function initViewers(chatId) {
-    if(!FIREBASE_READY||!db)return;
-    var connRef=db.ref('.info/connected');
-    sessionRef=db.ref('viewers/'+chatId+'/'+Date.now()+'-'+Math.random().toString(36).slice(2));
-    connRef.on('value',function(snap){
-      if(snap.val()===true){
-        sessionRef.onDisconnect().remove();
-        sessionRef.set(true);
-        db.ref('viewers/'+chatId).on('value',function(s){
-          var n=s.numChildren();
-          document.getElementById('viewer-n').textContent=n||'—';
-          document.getElementById('viewer-count').hidden=false;
-        });
-      }
-    });
-  }
-
-  // ── chat ──
-  var chatMsgsEl=document.getElementById('chat-msgs');
-  var chatInput=document.getElementById('chat-input');
-  var chatSend=document.getElementById('chat-send');
-  var spamWarn=document.getElementById('spam-warn');
-  var chatBannedUsers={};
-
-  function showSpamWarn(msg) {
-    spamWarn.textContent=msg; spamWarn.style.display='block';
-    clearTimeout(spamWarn._t); spamWarn._t=setTimeout(function(){spamWarn.style.display='none';},4000);
-  }
-
-  function appendMessage(data, key) {
-    if(data.deleted)return;
-    var row=document.createElement('div'); row.className='chat-msg'; row.dataset.key=key||'';
-    var isSelf=data.username===username;
-    var name=document.createElement('span'); name.className='msg-name'+(isSelf?' self':''); name.textContent=data.username; row.appendChild(name);
-    var text=document.createElement('span'); text.className='msg-text'; text.textContent=data.text; row.appendChild(text);
-    var ts=document.createElement('span'); ts.className='msg-ts'; ts.textContent=fmtTime(data.ts); row.appendChild(ts);
-    chatMsgsEl.appendChild(row);
-    chatMsgsEl.scrollTop=chatMsgsEl.scrollHeight;
-    // keep max 200 messages
-    while(chatMsgsEl.children.length>200) chatMsgsEl.removeChild(chatMsgsEl.firstChild);
-  }
-
-  function addSystemMsg(text) {
-    var s=document.createElement('div'); s.className='chat-system'; s.textContent=text;
-    chatMsgsEl.appendChild(s); chatMsgsEl.scrollTop=chatMsgsEl.scrollHeight;
-  }
-
-  function initChat(chatId) {
-    document.getElementById('chat-username-badge').textContent=username;
-    addSystemMsg('You joined as '+username);
-
-    if(FIREBASE_READY && db) {
-      initFirebaseChat(chatId);
-    } else {
-      initLocalChat();
-    }
-  }
-
-  // ── local chat (works without Firebase — messages visible in this session only) ──
-  function initLocalChat() {
-    addSystemMsg('Live chat · session only — messages visible to you');
-
-    // Restore messages from sessionStorage so they survive navigation
-    var storeKey='kestrel_chat_'+location.search;
-    var stored=[];
-    try{stored=JSON.parse(sessionStorage.getItem(storeKey)||'[]');}catch(e){}
-    stored.forEach(function(m){appendMessage(m,m.key);});
-
-    // BroadcastChannel lets other tabs on the same browser share messages
-    var bc=null;
-    try{ if(typeof BroadcastChannel!=='undefined') bc=new BroadcastChannel('kestrel_chat_'+chatId); }catch(e){}
-    if(bc){
-      bc.onmessage=function(e){
-        if(e.data&&e.data.username!==username){appendMessage(e.data,e.data.key);}
-      };
-    }
-
-    function sendMsg() {
-      var text=(chatInput.value||'').trim(); if(!text)return;
-      var warn=checkSpam(text); if(warn){showSpamWarn(warn);return;}
-      recordSend(text);
-      chatInput.value='';
-      var msg={text:text,username:username,ts:Date.now(),key:Date.now().toString(36)};
-      appendMessage(msg,msg.key);
-      // persist
-      try{
-        stored.push(msg);
-        if(stored.length>200)stored=stored.slice(-200);
-        sessionStorage.setItem(storeKey,JSON.stringify(stored));
-      }catch(e){}
-      // broadcast to other same-browser tabs
-      if(bc){try{bc.postMessage(msg);}catch(e){}}
-    }
-
-    chatSend.addEventListener('click',sendMsg);
-    chatInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
-  }
-
-  // ── Firebase chat (cross-user real-time) ──
-  function initFirebaseChat(chatId) {
-    var msgsRef=db.ref('chats/'+chatId+'/messages');
-    var bannedRef=db.ref('banned');
-    bannedRef.on('value',function(s){chatBannedUsers=s.val()||{};});
-
-    var initialLoad=true;
-    msgsRef.limitToLast(80).on('child_added',function(snap){
-      var data=snap.val();
-      if(data&&!data.deleted&&!chatBannedUsers[data.username]) appendMessage(data,snap.key);
-      if(initialLoad) chatMsgsEl.scrollTop=chatMsgsEl.scrollHeight;
-    });
-    setTimeout(function(){initialLoad=false;},1000);
-
-    msgsRef.on('child_changed',function(snap){
-      var data=snap.val();
-      if(data&&data.deleted){var el=chatMsgsEl.querySelector('[data-key="'+snap.key+'"]');if(el)el.remove();}
-    });
-
-    function sendMsg() {
-      var text=(chatInput.value||'').trim(); if(!text)return;
-      var warn=checkSpam(text); if(warn){showSpamWarn(warn);return;}
-      if(chatBannedUsers[username]){showSpamWarn('You have been banned from chat.');return;}
-      recordSend(text); chatInput.value='';
-      msgsRef.push({text:text,username:username,ts:Date.now()});
-    }
-
-    chatSend.addEventListener('click',sendMsg);
-    chatInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
-  }
 
   // ── share button ──
   document.getElementById('share-btn').addEventListener('click',function(){
@@ -653,9 +345,6 @@ header {
     // show layout
     document.getElementById('main-layout').hidden=false;
 
-    // firebase
-    initViewers(chatId);
-    initChat(chatId);
   }
 
   function showError(){document.getElementById('error-state').hidden=false;}
