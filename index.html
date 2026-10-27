@@ -11,17 +11,21 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #080b0f; --surface: #111519; --raise: #181e26; --card: #13181f;
-  --line: #222a35; --text: #e8edf3; --muted: #7a8799; --subtle: #3d4f62;
-  --accent: #5ec99a; --accent2: #3fa876; --on-accent: #021a0e;
-  --live: #ff3d3d; --live-glow: rgba(255,61,61,.25);
-  --soon: #f5a623; --blue: #4da3ff;
+  --bg: #0d0618; --surface: #170a28; --raise: #20103a; --card: #1a0c2e;
+  --line: #3a1f5e; --text: #fff4fb; --muted: #b79bd0; --subtle: #7a5ea0;
+  --accent: #ff4fa3; --accent2: #ff8a3d; --on-accent: #1a0210;
+  --live: #ff2e4d; --live-glow: rgba(255,46,77,.25);
+  --soon: #ffb02e; --blue: #2de2e6;
   color-scheme: dark;
 }
 *, *::before, *::after { box-sizing: border-box }
+body { background: linear-gradient(180deg,#0d0618 0%,#2a0a4a 45%,#5a1250 75%,#ff6a3d22 100%) fixed, var(--bg) !important }
+.brand, h1, h2 { font-family: "Anton", "Schibsted Grotesk", sans-serif !important; text-transform: uppercase; letter-spacing: .04em !important; font-weight: 400 !important;
+  background: linear-gradient(90deg,#ff8a3d,#ff4fa3 55%,#b45cff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent }
+.brand-dot { -webkit-text-fill-color: #2de2e6 }
 html { scroll-behavior: smooth }
 html, body { margin: 0 }
 body {
@@ -38,7 +42,7 @@ button { font-family: inherit }
 /* ── header ── */
 header {
   position: sticky; top: 0; z-index: 50;
-  background: rgba(8,11,15,.88); backdrop-filter: blur(16px);
+  background: rgba(13,6,24,.88); backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--line);
 }
 .header-inner {
@@ -61,7 +65,7 @@ header {
   border: 1px solid var(--line); background: var(--raise);
   font: 600 11px "JetBrains Mono", monospace; color: var(--muted);
 }
-.stat-pill.live-pill { border-color: var(--live-glow); background: rgba(255,61,61,.08); color: var(--live) }
+.stat-pill.live-pill { border-color: var(--live-glow); background: rgba(255,46,77,.08); color: var(--live) }
 .live-dot-sm {
   width: 5px; height: 5px; border-radius: 50%; background: var(--live); flex: none;
   animation: blink 1.4s ease-in-out infinite;
@@ -94,7 +98,7 @@ header {
 .cat-btn:hover { border-color: var(--muted); color: var(--text); background: var(--card) }
 .cat-btn.active {
   background: var(--accent); color: var(--on-accent);
-  border-color: var(--accent); box-shadow: 0 0 18px rgba(94,201,154,.22);
+  border-color: var(--accent); box-shadow: 0 0 18px rgba(255,79,163,.22);
 }
 .cat-btn .cat-emoji { font-size: 16px; line-height: 1 }
 .cat-count {
@@ -133,12 +137,12 @@ header {
   position: relative;
 }
 .card:hover {
-  border-color: rgba(94,201,154,.35);
-  box-shadow: 0 12px 36px -10px rgba(0,0,0,.6), 0 0 0 1px rgba(94,201,154,.1);
+  border-color: rgba(255,79,163,.35);
+  box-shadow: 0 12px 36px -10px rgba(0,0,0,.6), 0 0 0 1px rgba(255,79,163,.1);
   transform: translateY(-2px);
 }
-.card.live-card { border-color: rgba(255,61,61,.3) }
-.card.live-card:hover { border-color: rgba(255,61,61,.6); box-shadow: 0 12px 36px -10px rgba(255,61,61,.2) }
+.card.live-card { border-color: rgba(255,46,77,.3) }
+.card.live-card:hover { border-color: rgba(255,46,77,.6); box-shadow: 0 12px 36px -10px rgba(255,46,77,.2) }
 
 .thumb {
   aspect-ratio: 16/9; background: var(--raise); position: relative;
@@ -159,7 +163,7 @@ header {
 .card:hover .thumb-play { opacity: 1 }
 .play-ring {
   width: 54px; height: 54px; border-radius: 50%;
-  background: rgba(94,201,154,.2); border: 2px solid rgba(94,201,154,.6);
+  background: rgba(255,79,163,.2); border: 2px solid rgba(255,79,163,.6);
   backdrop-filter: blur(8px);
   display: flex; align-items: center; justify-content: center;
   transform: scale(.8); transition: transform .2s;
@@ -388,7 +392,7 @@ footer a:hover { color: var(--muted) }
         ctx.fillText(truncate(s.league, 34), W/2, H/2+12);
       }
     }
-    ctx.fillStyle = 'rgba(94,201,154,0.4)'; ctx.fillRect(0, H-3, W, 3);
+    ctx.fillStyle = 'rgba(255,79,163,0.4)'; ctx.fillRect(0, H-3, W, 3);
     try { return canvas.toDataURL('image/jpeg', 0.82); } catch(e) { return ''; }
   }
 
