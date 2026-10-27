@@ -311,12 +311,14 @@ header {
 
     loadStreams();
 
+    // watch total viewers
     db.ref('viewers').on('value', function(snap){
       var total = 0;
       snap.forEach(function(stream){ total += stream.numChildren(); });
       document.getElementById('stat-viewers').textContent = total || '0';
     });
 
+    // watch banned users
     db.ref('banned').on('value', function(snap){
       bannedUsers = snap.val() || {};
       var count = Object.keys(bannedUsers).length;
