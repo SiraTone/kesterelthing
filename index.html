@@ -3,206 +3,262 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Kestrel</title>
+<title>Kestrel · Live Sports Streams</title>
+<meta name="description" content="Watch live sports streams — soccer, basketball, UFC, hockey and more. Free, no signup.">
+<meta property="og:title" content="Kestrel · Live Sports Streams">
+<meta property="og:description" content="Free live sports streams. No signup required.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0b0e12; --surface: #161b23; --raise: #1e252f; --line: #272f3a;
-  --text: #eef1f5; --muted: #8c96a5; --subtle: #4a5568;
-  --accent: #6fcfa6; --on-accent: #04140d; --live: #ff4545;
+  --bg: #080b0f; --surface: #111519; --raise: #181e26; --card: #13181f;
+  --line: #222a35; --text: #e8edf3; --muted: #7a8799; --subtle: #3d4f62;
+  --accent: #5ec99a; --accent2: #3fa876; --on-accent: #021a0e;
+  --live: #ff3d3d; --live-glow: rgba(255,61,61,.25);
+  --soon: #f5a623; --blue: #4da3ff;
   color-scheme: dark;
 }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --bg: #eef1f5; --surface: #ffffff; --raise: #f4f6f9; --line: #d6dce5;
-    --text: #14181f; --muted: #5b6574; --subtle: #a0aab5;
-    --accent: #0B3D2E; --on-accent: #ffffff; --live: #d42020; color-scheme: light;
-  }
-}
-:root[data-theme="light"] {
-  --bg: #eef1f5; --surface: #ffffff; --raise: #f4f6f9; --line: #d6dce5;
-  --text: #14181f; --muted: #5b6574; --subtle: #a0aab5;
-  --accent: #0B3D2E; --on-accent: #ffffff; --live: #d42020; color-scheme: light;
-}
 *, *::before, *::after { box-sizing: border-box }
+html { scroll-behavior: smooth }
 html, body { margin: 0 }
 body {
   background: var(--bg); color: var(--text);
-  font: 400 16px/1.6 "Schibsted Grotesk", system-ui, sans-serif;
+  font: 400 15px/1.6 "Schibsted Grotesk", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  min-height: 100dvh;
 }
 a { color: inherit; text-decoration: none }
 img { max-width: 100% }
+button { font-family: inherit }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px }
-.page { max-width: 1160px; margin: 0 auto }
 
-body::before {
-  content: ""; position: fixed; inset: 0 0 auto;
-  height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bg);
-}
+/* ── header ── */
 header {
-  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50;
-  background: var(--bg); border-bottom: 1px solid var(--line);
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(8,11,15,.88); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
 }
-.header-inner { display: flex; align-items: center; gap: 16px; height: 56px; max-width: 1160px; margin: 0 auto }
-.brand { font: 800 21px/1 "Schibsted Grotesk", sans-serif; letter-spacing: -.04em; flex: none }
-.brand em { font-style: normal; color: var(--accent) }
-.cats { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0 }
+.header-inner {
+  display: flex; align-items: center; gap: 16px;
+  height: 58px; max-width: 1280px; margin: 0 auto;
+  padding: 0 max(20px, env(safe-area-inset-left));
+}
+.brand {
+  font: 800 22px/1 "Schibsted Grotesk", sans-serif; letter-spacing: -.05em;
+  flex: none; display: flex; align-items: center; gap: 6px; cursor: pointer;
+  text-decoration: none; color: var(--text);
+}
+.brand-dot { color: var(--accent); font-style: normal }
+.header-stats {
+  display: flex; gap: 14px; margin-left: auto; flex: none; align-items: center;
+}
+.stat-pill {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--raise);
+  font: 600 11px "JetBrains Mono", monospace; color: var(--muted);
+}
+.stat-pill.live-pill { border-color: var(--live-glow); background: rgba(255,61,61,.08); color: var(--live) }
+.live-dot-sm {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--live); flex: none;
+  animation: blink 1.4s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+.admin-link {
+  font: 500 12px "Schibsted Grotesk", sans-serif; color: var(--subtle);
+  padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line);
+  transition: color .15s, border-color .15s;
+}
+.admin-link:hover { color: var(--muted); border-color: var(--muted) }
+
+/* ── layout ── */
+.page { max-width: 1280px; margin: 0 auto; padding: 0 max(20px, env(safe-area-inset-left)) }
+
+/* ── category strip ── */
+.cat-strip { padding: 20px 0 0 }
+.cat-label { font: 700 10px "Schibsted Grotesk", sans-serif; letter-spacing: .1em; text-transform: uppercase; color: var(--subtle); margin-bottom: 10px }
+.cats { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px }
 .cats::-webkit-scrollbar { display: none }
-.cat {
-  flex: none; padding: 5px 13px; border-radius: 999px; border: 1px solid transparent;
-  background: transparent; color: var(--muted); font: 500 13px "Schibsted Grotesk", sans-serif;
-  cursor: pointer; text-transform: capitalize; white-space: nowrap;
-  transition: color .15s, background .15s, border-color .15s;
+.cat-btn {
+  flex: none; display: flex; align-items: center; gap: 7px;
+  padding: 8px 16px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--raise);
+  color: var(--muted); cursor: pointer; white-space: nowrap;
+  font: 600 13px "Schibsted Grotesk", sans-serif;
+  transition: all .18s;
 }
-.cat:hover { color: var(--text); border-color: var(--line) }
-.cat.active { background: var(--accent); color: var(--on-accent); border-color: transparent }
-.stream-count { font: 500 12px "JetBrains Mono", monospace; color: var(--subtle); flex: none; white-space: nowrap }
-
-main { padding-block: 28px }
-.state { text-align: center; padding: 80px 20px; color: var(--muted) }
-.state-icon { font-size: 44px; margin-bottom: 14px; line-height: 1 }
-.state h2 { margin: 0 0 8px; font-size: 20px; color: var(--text); letter-spacing: -.02em }
-.state p { margin: 0 auto; font-size: 14px; max-width: 30em; color: var(--muted) }
-.retry-btn {
-  margin-top: 20px; padding: 9px 20px; border-radius: 9px;
-  border: 1px solid var(--line); background: transparent;
-  color: var(--text); font: 600 14px "Schibsted Grotesk", sans-serif; cursor: pointer;
+.cat-btn:hover { border-color: var(--muted); color: var(--text); background: var(--card) }
+.cat-btn.active {
+  background: var(--accent); color: var(--on-accent);
+  border-color: var(--accent); box-shadow: 0 0 18px rgba(94,201,154,.22);
 }
-.retry-btn:hover { border-color: var(--muted) }
+.cat-btn .cat-emoji { font-size: 16px; line-height: 1 }
+.cat-count {
+  font: 500 10px "JetBrains Mono", monospace;
+  padding: 1px 6px; border-radius: 4px;
+  background: rgba(0,0,0,.2);
+}
+.cat-btn.active .cat-count { background: rgba(0,0,0,.18) }
 
-.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px }
-@media (max-width: 860px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
-@media (max-width: 520px)  { .grid { grid-template-columns: minmax(0, 1fr); gap: 10px } }
+/* ── section headers ── */
+.section { padding-top: 28px }
+.section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px }
+.section-title {
+  font: 800 18px "Schibsted Grotesk", sans-serif; letter-spacing: -.03em;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-live-badge {
+  background: var(--live); color: #fff;
+  font: 700 9px "Schibsted Grotesk", sans-serif; letter-spacing: .08em; text-transform: uppercase;
+  padding: 3px 7px; border-radius: 4px; vertical-align: middle;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.section-count { font: 500 13px "JetBrains Mono", monospace; color: var(--subtle); margin-left: auto }
 
+/* ── stream grid ── */
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px }
+@media (max-width: 900px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)) } }
+@media (max-width: 560px) { .grid { grid-template-columns: minmax(0,1fr); gap: 12px } }
+
+/* ── card ── */
 .card {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px;
   overflow: hidden; display: flex; flex-direction: column;
-  transition: border-color .18s, box-shadow .18s;
+  cursor: pointer; text-decoration: none; color: inherit;
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+  position: relative;
 }
-.card:hover { border-color: var(--muted); box-shadow: 0 8px 28px -8px rgba(0,0,0,.45) }
+.card:hover {
+  border-color: rgba(94,201,154,.35);
+  box-shadow: 0 12px 36px -10px rgba(0,0,0,.6), 0 0 0 1px rgba(94,201,154,.1);
+  transform: translateY(-2px);
+}
+.card.live-card { border-color: rgba(255,61,61,.3) }
+.card.live-card:hover { border-color: rgba(255,61,61,.6); box-shadow: 0 12px 36px -10px rgba(255,61,61,.2) }
 
 .thumb {
-  aspect-ratio: 16/9; background: var(--raise); position: relative; overflow: hidden;
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  aspect-ratio: 16/9; background: var(--raise); position: relative;
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
 }
-.thumb-img { width: 100%; height: 100%; object-fit: cover; display: block }
-.thumb-emoji { font-size: 40px; line-height: 1; opacity: .4; user-select: none }
+.thumb-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s }
+.card:hover .thumb-img { transform: scale(1.04) }
+.thumb-emoji { font-size: 44px; line-height: 1; opacity: .3; user-select: none }
 .thumb-img[hidden] { display: none }
 .overlay-gfx {
   position: absolute; inset: 0;
-  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.6)); pointer-events: none;
+  background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,.7)); pointer-events: none;
 }
 .thumb-play {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0); transition: background .2s; pointer-events: none;
+  opacity: 0; transition: opacity .2s; background: rgba(0,0,0,.15);
 }
-.thumb:hover .thumb-play { background: rgba(0,0,0,.3) }
-.play-circle {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: rgba(255,255,255,.15); backdrop-filter: blur(6px);
+.card:hover .thumb-play { opacity: 1 }
+.play-ring {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: rgba(94,201,154,.2); border: 2px solid rgba(94,201,154,.6);
+  backdrop-filter: blur(8px);
   display: flex; align-items: center; justify-content: center;
-  opacity: 0; transform: scale(.85); transition: opacity .2s, transform .2s;
+  transform: scale(.8); transition: transform .2s;
 }
-.thumb:hover .play-circle { opacity: 1; transform: scale(1) }
+.card:hover .play-ring { transform: scale(1) }
 
+.badge-row { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px }
 .live-badge {
-  position: absolute; top: 10px; left: 10px; background: var(--live); color: #fff;
-  font: 700 10px/1 "Schibsted Grotesk", sans-serif; letter-spacing: .08em; text-transform: uppercase;
-  padding: 4px 8px; border-radius: 5px; display: flex; align-items: center; gap: 5px;
+  background: var(--live); color: #fff;
+  font: 700 10px/1 "Schibsted Grotesk", sans-serif; letter-spacing: .06em; text-transform: uppercase;
+  padding: 4px 8px; border-radius: 5px; display: flex; align-items: center; gap: 4px;
 }
-.live-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; flex: none; animation: blink 1.4s ease-in-out infinite }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+.live-badge .ld { width: 5px; height: 5px; border-radius: 50%; background: #fff; animation: blink 1.4s infinite }
 .soon-badge {
-  position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,.55); color: var(--text);
-  font: 500 11px/1 "JetBrains Mono", monospace; padding: 4px 8px; border-radius: 5px; backdrop-filter: blur(4px);
+  background: rgba(0,0,0,.6); color: var(--soon);
+  font: 600 10px "JetBrains Mono", monospace; padding: 4px 8px; border-radius: 5px; backdrop-filter: blur(4px);
 }
-.quality-row { position: absolute; bottom: 8px; right: 8px; display: flex; gap: 4px }
+.q-row { position: absolute; bottom: 9px; right: 9px; display: flex; gap: 4px }
 .q-chip {
-  background: rgba(0,0,0,.55); color: #fff;
+  background: rgba(0,0,0,.6); color: rgba(255,255,255,.75);
   font: 500 10px "JetBrains Mono", monospace; padding: 3px 6px; border-radius: 4px; backdrop-filter: blur(4px);
 }
 
-.info { padding: 13px 15px 0; display: flex; flex-direction: column; gap: 4px; flex: 1 }
-.cat-tag { font: 700 10px/1 "Schibsted Grotesk", sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--accent) }
-.stream-name { font: 700 15px/1.25 "Schibsted Grotesk", sans-serif; letter-spacing: -.02em; color: var(--text); text-wrap: balance; margin: 0 }
-.league { font-size: 12px; color: var(--muted) }
-.card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 15px 13px; margin-top: auto }
-.match-time { font: 500 11px "JetBrains Mono", monospace; color: var(--subtle); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-.watch-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--accent); color: var(--on-accent); font: 700 13px "Schibsted Grotesk", sans-serif;
-  padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer; flex: none; transition: opacity .15s;
+.card-body { padding: 14px 15px 0; flex: 1; display: flex; flex-direction: column; gap: 3px }
+.card-cat {
+  font: 700 10px "Schibsted Grotesk", sans-serif; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--accent); display: flex; align-items: center; gap: 4px;
 }
-.watch-btn:hover { opacity: .82 }
-.sources-row { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 15px 13px }
-.src-btn {
-  padding: 3px 9px; border-radius: 6px; border: 1px solid var(--line); background: transparent;
-  color: var(--muted); font: 500 11px "JetBrains Mono", monospace; cursor: pointer;
-  transition: border-color .15s, color .15s;
+.card-name { font: 700 15px/1.3 "Schibsted Grotesk", sans-serif; letter-spacing: -.02em; color: var(--text) }
+.card-league { font: 400 12px "Schibsted Grotesk", sans-serif; color: var(--muted) }
+.card-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 15px 14px; margin-top: auto;
 }
-.src-btn:hover { border-color: var(--muted); color: var(--text) }
+.card-time { font: 500 11px "JetBrains Mono", monospace; color: var(--subtle) }
+.card-action {
+  font: 700 12px "Schibsted Grotesk", sans-serif; color: var(--accent);
+  display: flex; align-items: center; gap: 4px;
+}
 
+/* ── schedule ── */
+.schedule-list { display: flex; flex-direction: column; gap: 1px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line) }
+.sched-row {
+  display: flex; align-items: center; gap: 14px; padding: 13px 16px;
+  background: var(--card); cursor: pointer; text-decoration: none; color: inherit;
+  border-bottom: 1px solid var(--line); transition: background .15s;
+}
+.sched-row:last-child { border-bottom: none }
+.sched-row:hover { background: var(--raise) }
+.sched-time {
+  font: 600 11px "JetBrains Mono", monospace; color: var(--soon);
+  min-width: 56px; flex: none;
+}
+.sched-emoji { font-size: 18px; flex: none; opacity: .8 }
+.sched-info { flex: 1; min-width: 0 }
+.sched-name { font: 600 14px "Schibsted Grotesk", sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.sched-league { font-size: 12px; color: var(--muted) }
+.sched-badge {
+  font: 600 10px "Schibsted Grotesk", sans-serif; letter-spacing: .06em;
+  padding: 3px 8px; border-radius: 5px; flex: none;
+  background: rgba(245,166,35,.12); color: var(--soon); border: 1px solid rgba(245,166,35,.25);
+}
+
+/* ── states ── */
+.state {
+  grid-column: 1/-1; text-align: center; padding: 64px 20px;
+  color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.state-icon { font-size: 42px }
+.state h3 { margin: 0; font-size: 18px; color: var(--text); letter-spacing: -.02em }
+.state p { margin: 0; font-size: 14px; max-width: 28em }
+.retry-btn {
+  padding: 8px 20px; border-radius: 9px; border: 1px solid var(--line);
+  background: transparent; color: var(--text); font: 600 13px "Schibsted Grotesk", sans-serif; cursor: pointer;
+}
+.retry-btn:hover { border-color: var(--muted) }
+
+/* ── skeleton ── */
+.skeleton { background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid var(--line) }
+.skel-thumb { aspect-ratio: 16/9; background: var(--raise); position: relative; overflow: hidden }
+.skel-body { padding: 14px 15px }
+.skel-line {
+  height: 10px; border-radius: 5px; background: var(--line);
+  margin-bottom: 8px; animation: shimmer 1.6s ease-in-out infinite;
+}
+.skel-line.short { width: 60% }
+@keyframes shimmer {
+  0%,100% { opacity: .5 } 50% { opacity: 1 }
+}
+
+/* ── footer ── */
 footer {
-  border-top: 1px solid var(--line); padding: 22px 0 36px;
+  border-top: 1px solid var(--line); margin-top: 48px;
+  padding: 20px max(20px, env(safe-area-inset-left)) 36px;
   display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 10px; font-size: 13px; color: var(--muted);
+  flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--subtle);
+  max-width: 1280px; margin: 48px auto 0;
 }
-footer a:hover { color: var(--text) }
-
-/* ── modal ── */
-.modal-backdrop {
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,.85); backdrop-filter: blur(6px);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 16px; opacity: 0; pointer-events: none; transition: opacity .2s;
-}
-.modal-backdrop.open { opacity: 1; pointer-events: auto }
-.modal {
-  width: 100%; max-width: 960px; background: var(--surface); border: 1px solid var(--line);
-  border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
-  transform: translateY(10px); transition: transform .2s; max-height: calc(100dvh - 32px);
-}
-.modal-backdrop.open .modal { transform: translateY(0) }
-.modal-header {
-  display: flex; align-items: center; gap: 12px;
-  padding: 13px 16px; border-bottom: 1px solid var(--line); flex: none;
-}
-.modal-title { font: 700 15px "Schibsted Grotesk", sans-serif; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-.modal-live { background: var(--live); color: #fff; font: 700 10px "Schibsted Grotesk", sans-serif; letter-spacing: .08em; text-transform: uppercase; padding: 3px 7px; border-radius: 4px; flex: none }
-.modal-close {
-  width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: transparent;
-  color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; flex: none; transition: border-color .15s, color .15s;
-}
-.modal-close:hover { border-color: var(--muted); color: var(--text) }
-.player-wrap { position: relative; width: 100%; background: #000; aspect-ratio: 16/9 }
-.player-wrap video, .player-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none }
-.player-msg {
-  position: absolute; inset: 0; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 12px;
-  color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
-}
-.player-msg svg { opacity: .4 }
-.open-tab-btn {
-  padding: 8px 18px; border-radius: 8px; border: 1px solid var(--line); background: transparent;
-  color: var(--text); font: 600 13px "Schibsted Grotesk", sans-serif; cursor: pointer; transition: border-color .15s;
-}
-.open-tab-btn:hover { border-color: var(--muted) }
-.modal-sources { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-top: 1px solid var(--line); flex: none }
-.modal-src-btn {
-  padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line); background: transparent;
-  color: var(--muted); font: 500 11px "JetBrains Mono", monospace; cursor: pointer;
-  transition: border-color .15s, color .15s, background .15s;
-}
-.modal-src-btn:hover { border-color: var(--muted); color: var(--text) }
-.modal-src-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(111,207,166,.08) }
+footer a:hover { color: var(--muted) }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important } }
 </style>
@@ -211,151 +267,98 @@ footer a:hover { color: var(--text) }
 
 <header>
   <div class="header-inner">
-    <span class="brand">k<em>&middot;</em>strel</span>
-    <div class="cats" id="cats" role="tablist" aria-label="Sport categories"></div>
-    <span class="stream-count" id="count" aria-live="polite"></span>
+    <a class="brand" href="/">k<em class="brand-dot">&middot;</em>strel</a>
+    <div class="header-stats">
+      <span class="stat-pill live-pill" id="live-count-pill" hidden>
+        <span class="live-dot-sm"></span><span id="live-n">0</span> live
+      </span>
+      <span class="stat-pill" id="upcoming-pill" hidden>
+        <span id="upcoming-n">0</span> upcoming
+      </span>
+      <a class="admin-link" href="admin.html">Admin</a>
+    </div>
   </div>
 </header>
 
 <div class="page">
-  <main id="main">
-    <div class="state">
-      <div class="state-icon">📡</div>
-      <h2>Finding live streams&hellip;</h2>
-      <p>Checking what&rsquo;s on right now.</p>
-    </div>
-  </main>
-  <footer>
-    <span>kestrel &middot; sports streams</span>
-    <a href="https://strmfree.st" target="_blank" rel="noopener">powered by StreamFree</a>
-  </footer>
-</div>
+  <div class="cat-strip">
+    <div class="cats" id="cats" role="tablist" aria-label="Filter by sport"></div>
+  </div>
 
-<div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-label="Stream player">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title" id="modal-title"></span>
-      <span class="modal-live" id="modal-live" hidden>LIVE</span>
-      <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+  <section class="section" id="live-section" hidden>
+    <div class="section-head">
+      <h2 class="section-title">
+        Live Now
+        <span class="section-live-badge"><span class="live-dot-sm"></span>LIVE</span>
+      </h2>
+      <span class="section-count" id="live-count"></span>
     </div>
-    <div class="player-wrap" id="player-wrap"></div>
-    <div class="modal-sources" id="modal-sources"></div>
+    <div class="grid" id="live-grid"></div>
+  </section>
+
+  <section class="section" id="sched-section" hidden>
+    <div class="section-head">
+      <h2 class="section-title">Schedule</h2>
+      <span class="section-count" id="sched-count"></span>
+    </div>
+    <div class="schedule-list" id="sched-list"></div>
+  </section>
+
+  <div class="grid" id="loading-grid" style="padding-top:28px">
+    <div class="skeleton"><div class="skel-thumb"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+    <div class="skeleton"><div class="skel-thumb"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+    <div class="skeleton"><div class="skel-thumb"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.7/hls.min.js" integrity="sha512-LMPOAjBLAiNMIjz1MXSJe4MHBv/QMkKdRFRa8HKf4L1A5jUfhVhE8FkJtCBF0gp4TkmOkLCTgxDxhXH/a5Mg==" crossorigin="anonymous"></script>
+<footer>
+  <span>kestrel &middot; live sports streams</span>
+  <a href="https://strmfree.st" target="_blank" rel="noopener">powered by StreamFree</a>
+</footer>
+
 <script>
 (function () {
   var API = 'https://streamfree.top/api/v1';
-  var CACHE_TTL = 60 * 1000;
+  var CACHE_TTL = 60000;
   var EMOJI = { soccer:'⚽', basketball:'🏀', hockey:'🏒', combat:'🥊', baseball:'⚾', football:'🏈', racing:'🏎', tennis:'🎾', cricket:'🏏' };
+  var SPORT_LABELS = { soccer:'Soccer', basketball:'Basketball', hockey:'Hockey', combat:'Combat', baseball:'Baseball', football:'Football', racing:'Racing', tennis:'Tennis', cricket:'Cricket' };
 
-  var state = { category: 'all', streams: [], categories: [], ts: 0 };
-  var mainEl    = document.getElementById('main');
-  var catsEl    = document.getElementById('cats');
-  var countEl   = document.getElementById('count');
-  var modalEl   = document.getElementById('modal');
-  var titleEl   = document.getElementById('modal-title');
-  var liveEl    = document.getElementById('modal-live');
-  var closeBtn  = document.getElementById('modal-close');
-  var playerWrap = document.getElementById('player-wrap');
-  var sourcesEl  = document.getElementById('modal-sources');
-  var hlsInst   = null;
-  var activeSrc = null;
+  var state = { cat: 'all', streams: [], cats: [], ts: 0 };
+  var loadingGrid = document.getElementById('loading-grid');
+  var liveSection = document.getElementById('live-section');
+  var liveGrid    = document.getElementById('live-grid');
+  var liveCount   = document.getElementById('live-count');
+  var schedSection = document.getElementById('sched-section');
+  var schedList   = document.getElementById('sched-list');
+  var schedCount  = document.getElementById('sched-count');
+  var catsEl      = document.getElementById('cats');
+  var liveCountPill = document.getElementById('live-count-pill');
+  var liveN       = document.getElementById('live-n');
+  var upcomingPill = document.getElementById('upcoming-pill');
+  var upcomingN   = document.getElementById('upcoming-n');
 
-  // ── player ──
-  function openModal(stream) {
-    var sources = stream.sources || [];
-    titleEl.textContent = stream.name;
-    liveEl.hidden = !isLive(stream.match_timestamp);
+  function slugify(str) { return (str||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+  function streamUrl(s) { return 'watch.html?id='+encodeURIComponent(slugify(s.name))+'&ts='+(s.match_timestamp||0); }
 
-    sourcesEl.innerHTML = '';
-    if (sources.length > 1) {
-      sources.forEach(function (src) {
-        var q = qualityLabel(src) || 'stream';
-        var btn = document.createElement('button');
-        btn.className = 'modal-src-btn';
-        btn.textContent = q;
-        btn.dataset.src = src;
-        btn.addEventListener('click', function () {
-          sourcesEl.querySelectorAll('.modal-src-btn').forEach(function (b) { b.classList.remove('active'); });
-          btn.classList.add('active');
-          loadSource(src);
-        });
-        sourcesEl.appendChild(btn);
-      });
-    }
+  function isLive(ts) { return !ts || ts <= Date.now()/1000 + 300; }
 
-    var best = bestSource(sources);
-    if (best) {
-      var firstBtn = sourcesEl.querySelector('.modal-src-btn');
-      if (firstBtn) firstBtn.classList.add('active');
-      loadSource(best);
-    } else {
-      playerWrap.innerHTML = '<div class="player-msg"><span>No source available</span></div>';
-    }
-
-    modalEl.classList.add('open');
-    document.body.style.overflow = 'hidden';
-    closeBtn.focus();
-  }
-
-  function loadSource(src) {
-    if (src === activeSrc) return;
-    activeSrc = src;
-    destroyPlayer();
-
-    var isHls = /\.m3u8(\?|$)/i.test(src);
-
-    if (isHls && window.Hls && Hls.isSupported()) {
-      var vid = document.createElement('video');
-      vid.controls = true; vid.autoplay = true; vid.playsInline = true;
-      playerWrap.appendChild(vid);
-      hlsInst = new Hls({ enableWorker: true, lowLatencyMode: true });
-      hlsInst.loadSource(src);
-      hlsInst.attachMedia(vid);
-      hlsInst.on(Hls.Events.ERROR, function (e, data) { if (data.fatal) showFallback(src); });
-    } else if (isHls && document.createElement('video').canPlayType('application/vnd.apple.mpegurl')) {
-      var vid = document.createElement('video');
-      vid.controls = true; vid.autoplay = true; vid.playsInline = true; vid.src = src;
-      playerWrap.appendChild(vid);
-    } else {
-      var iframe = document.createElement('iframe');
-      iframe.src = src; iframe.allowFullscreen = true;
-      iframe.allow = 'autoplay; fullscreen; picture-in-picture'; iframe.scrolling = 'no';
-      playerWrap.appendChild(iframe);
-    }
-  }
-
-  function showFallback(src) {
-    destroyPlayer();
-    var msg = document.createElement('div'); msg.className = 'player-msg';
-    msg.innerHTML = "<span>This stream can’t be embedded.</span>";
-    var btn = document.createElement('button'); btn.className = 'open-tab-btn'; btn.textContent = 'Open stream →';
-    btn.addEventListener('click', function () { window.open(src, '_blank', 'noopener'); });
-    msg.appendChild(btn); playerWrap.appendChild(msg);
-  }
-
-  function destroyPlayer() {
-    if (hlsInst) { try { hlsInst.destroy(); } catch(e){} hlsInst = null; }
-    playerWrap.innerHTML = ''; activeSrc = null;
-  }
-
-  function closeModal() { modalEl.classList.remove('open'); document.body.style.overflow = ''; destroyPlayer(); }
-  closeBtn.addEventListener('click', closeModal);
-  modalEl.addEventListener('click', function (e) { if (e.target === modalEl) closeModal(); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modalEl.classList.contains('open')) closeModal(); });
-
-  // ── helpers ──
   function fmt(ts) {
     if (!ts) return '';
-    var diff = ts * 1000 - Date.now();
-    if (Math.abs(diff) < 4*60*60*1000) return diff < 0 ? 'started '+fmtRel(Math.abs(diff))+' ago' : 'in '+fmtRel(diff);
+    var diff = ts*1000 - Date.now();
+    if (Math.abs(diff) < 4*3600000) {
+      if (diff < 0) return 'started '+fmtRel(Math.abs(diff))+' ago';
+      return 'in '+fmtRel(diff);
+    }
     var d = new Date(ts*1000);
     return d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+' · '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
   }
+  function fmtShort(ts) {
+    var d = new Date(ts*1000);
+    var diff = ts*1000 - Date.now();
+    if (diff < 24*3600000) return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+    return d.toLocaleDateString([],{weekday:'short'})+' '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  }
   function fmtRel(ms) { var m=Math.round(ms/60000); return m<60?m+'m':Math.round(m/60)+'h'; }
-  function isLive(ts) { return !ts || ts <= Date.now()/1000+5*60; }
   function qualityLabel(url) { var m=url.match(/(\d{3,4}p)/i); return m?m[1].toLowerCase():null; }
   function bestSource(sources) {
     var pref=['1080p','720p','540p','480p','360p'];
@@ -363,126 +366,153 @@ footer a:hover { color: var(--text) }
     return sources[0]||null;
   }
 
-  // ── card ──
   function renderCard(s) {
     var live = isLive(s.match_timestamp);
-    var emoji = EMOJI[s.category]||'📺';
     var sources = s.sources||[];
-    var best = bestSource(sources);
     var qualities = sources.map(qualityLabel).filter(Boolean).filter(function(q,i,a){return a.indexOf(q)===i;});
+    var emoji = EMOJI[s.category]||'📺';
 
-    var div = document.createElement('div'); div.className='card';
+    var a = document.createElement('a');
+    a.className = 'card'+(live?' live-card':'');
+    a.href = streamUrl(s);
 
+    // thumb
     var thumb = document.createElement('div'); thumb.className='thumb';
-    thumb.setAttribute('role','button'); thumb.setAttribute('tabindex','0');
-    thumb.setAttribute('aria-label','Watch '+s.name);
-    thumb.addEventListener('click', function(){openModal(s);});
-    thumb.addEventListener('keydown', function(e){if(e.key==='Enter'||e.key===' ')openModal(s);});
-
     if (s.thumbnail_url) {
-      var img=document.createElement('img'); img.className='thumb-img'; img.alt=s.name;
-      img.onerror=function(){this.hidden=true;fallback.hidden=false;}; img.src=s.thumbnail_url; thumb.appendChild(img);
+      var img = document.createElement('img'); img.className='thumb-img'; img.alt=s.name;
+      img.onerror=function(){this.hidden=true;fb.hidden=false;}; img.src=s.thumbnail_url; thumb.appendChild(img);
     }
-    var fallback=document.createElement('div'); fallback.className='thumb-emoji'; fallback.textContent=emoji; fallback.hidden=!!s.thumbnail_url; thumb.appendChild(fallback);
+    var fb=document.createElement('div'); fb.className='thumb-emoji'; fb.textContent=emoji; fb.hidden=!!s.thumbnail_url; thumb.appendChild(fb);
     thumb.appendChild(Object.assign(document.createElement('div'),{className:'overlay-gfx'}));
+    var tp=document.createElement('div'); tp.className='thumb-play';
+    var pr=document.createElement('div'); pr.className='play-ring';
+    pr.innerHTML='<svg width="18" height="18" viewBox="0 0 12 12" fill="white"><path d="M2.5 1.8C2.5 1.2 3.17.92 3.65 1.27l7 4.5a.75.75 0 0 1 0 1.06l-7 4.5C3.17 11.08 2.5 10.8 2.5 10.2v-8.4Z"/></svg>';
+    tp.appendChild(pr); thumb.appendChild(tp);
 
-    var playOverlay=document.createElement('div'); playOverlay.className='thumb-play';
-    var circle=document.createElement('div'); circle.className='play-circle';
-    circle.innerHTML='<svg width="16" height="16" viewBox="0 0 12 12" fill="white"><path d="M2 1.5C2 .95 2.59.65 3.03.97l7 4.5a.75.75 0 0 1 0 1.06l-7 4.5C2.59 11.35 2 11.05 2 10.5v-9Z"/></svg>';
-    playOverlay.appendChild(circle); thumb.appendChild(playOverlay);
-
+    var badgeRow=document.createElement('div'); badgeRow.className='badge-row';
     if (live) {
-      var badge=document.createElement('div'); badge.className='live-badge'; badge.innerHTML='<span class="live-dot"></span>LIVE'; thumb.appendChild(badge);
+      var lb=document.createElement('div'); lb.className='live-badge'; lb.innerHTML='<span class="ld"></span>LIVE'; badgeRow.appendChild(lb);
     } else if (s.match_timestamp) {
-      var soon=document.createElement('div'); soon.className='soon-badge'; soon.textContent=fmt(s.match_timestamp); thumb.appendChild(soon);
+      var sb=document.createElement('div'); sb.className='soon-badge'; sb.textContent=fmt(s.match_timestamp); badgeRow.appendChild(sb);
     }
-    if (qualities.length) {
-      var qRow=document.createElement('div'); qRow.className='quality-row';
-      qualities.slice(0,3).forEach(function(q){var c=document.createElement('span');c.className='q-chip';c.textContent=q;qRow.appendChild(c);});
-      thumb.appendChild(qRow);
-    }
-    div.appendChild(thumb);
+    thumb.appendChild(badgeRow);
 
-    var info=document.createElement('div'); info.className='info';
-    var catTag=document.createElement('div'); catTag.className='cat-tag'; catTag.textContent=(EMOJI[s.category]||'')+' '+(s.category||''); info.appendChild(catTag);
-    var name=document.createElement('h3'); name.className='stream-name'; name.textContent=s.name; info.appendChild(name);
-    if(s.league){var lg=document.createElement('div');lg.className='league';lg.textContent=s.league;info.appendChild(lg);}
-    div.appendChild(info);
+    if (qualities.length) {
+      var qr=document.createElement('div'); qr.className='q-row';
+      qualities.slice(0,3).forEach(function(q){var c=document.createElement('span');c.className='q-chip';c.textContent=q;qr.appendChild(c);});
+      thumb.appendChild(qr);
+    }
+    a.appendChild(thumb);
+
+    // body
+    var body=document.createElement('div'); body.className='card-body';
+    var ct=document.createElement('div'); ct.className='card-cat'; ct.textContent=(emoji+' ')+(SPORT_LABELS[s.category]||s.category||''); body.appendChild(ct);
+    var cn=document.createElement('div'); cn.className='card-name'; cn.textContent=s.name; body.appendChild(cn);
+    if(s.league){var cl=document.createElement('div');cl.className='card-league';cl.textContent=s.league;body.appendChild(cl);}
+    a.appendChild(body);
 
     var foot=document.createElement('div'); foot.className='card-foot';
-    var timeEl=document.createElement('span'); timeEl.className='match-time'; timeEl.textContent=live?'On now':fmt(s.match_timestamp); foot.appendChild(timeEl);
-    if(best){var wb=document.createElement('button');wb.className='watch-btn';wb.innerHTML='<svg width="13" height="13" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M2 1.5C2 .95 2.59.65 3.03.97l7 4.5a.75.75 0 0 1 0 1.06l-7 4.5C2.59 11.35 2 11.05 2 10.5v-9Z"/></svg>Watch';wb.addEventListener('click',function(){openModal(s);});foot.appendChild(wb);}
-    div.appendChild(foot);
+    var ct2=document.createElement('span'); ct2.className='card-time'; ct2.textContent=live?'On now':fmt(s.match_timestamp); foot.appendChild(ct2);
+    var ca=document.createElement('span'); ca.className='card-action'; ca.innerHTML='Watch <svg width="11" height="11" viewBox="0 0 10 10" fill="currentColor"><path d="M1.5.7A.75.75 0 0 0 .7 1.5v7a.75.75 0 0 0 1.21.59l5-3.5a.75.75 0 0 0 0-1.18l-5-3.5A.75.75 0 0 0 1.5.7Z"/></svg>'; foot.appendChild(ca);
+    a.appendChild(foot);
+    return a;
+  }
 
-    if(sources.length>1){
-      var srcRow=document.createElement('div');srcRow.className='sources-row';
-      sources.forEach(function(src){
-        var q=qualityLabel(src)||'stream';
-        var b=document.createElement('button');b.className='src-btn';b.textContent=q;
-        b.addEventListener('click',function(){openModal(s);setTimeout(function(){
-          var btns=sourcesEl.querySelectorAll('.modal-src-btn');
-          btns.forEach(function(mb){if(mb.dataset.src===src){mb.classList.add('active');loadSource(src);}else{mb.classList.remove('active');}});
-        },50);});
-        srcRow.appendChild(b);
-      });
-      div.appendChild(srcRow);
+  function renderSchedRow(s) {
+    var emoji = EMOJI[s.category]||'📺';
+    var a=document.createElement('a'); a.className='sched-row'; a.href=streamUrl(s);
+    var st=document.createElement('span'); st.className='sched-time'; st.textContent=fmtShort(s.match_timestamp); a.appendChild(st);
+    var se=document.createElement('span'); se.className='sched-emoji'; se.textContent=emoji; a.appendChild(se);
+    var si=document.createElement('div'); si.className='sched-info';
+    var sn=document.createElement('div'); sn.className='sched-name'; sn.textContent=s.name; si.appendChild(sn);
+    if(s.league){var sl=document.createElement('div');sl.className='sched-league';sl.textContent=s.league;si.appendChild(sl);}
+    a.appendChild(si);
+    var badge=document.createElement('span'); badge.className='sched-badge'; badge.textContent='Upcoming'; a.appendChild(badge);
+    return a;
+  }
+
+  function render() {
+    var streams = state.cat==='all' ? state.streams : state.streams.filter(function(s){return s.category===state.cat;});
+    var live = streams.filter(function(s){return isLive(s.match_timestamp);});
+    var upcoming = streams.filter(function(s){return !isLive(s.match_timestamp);}).sort(function(a,b){return a.match_timestamp-b.match_timestamp;});
+
+    liveGrid.innerHTML=''; schedList.innerHTML='';
+
+    if (live.length) {
+      live.forEach(function(s){liveGrid.appendChild(renderCard(s));});
+      liveSection.hidden=false;
+      liveCount.textContent=live.length+' stream'+(live.length===1?'':'s');
+    } else {
+      liveSection.hidden=true;
     }
-    return div;
-  }
 
-  function renderGrid(streams) {
-    if(!streams.length){
-      var cat=state.category==='all'?'any sport':state.category;
-      mainEl.innerHTML='<div class="state"><div class="state-icon">'+(EMOJI[state.category]||'📺')+'</div><h2>Nothing live right now</h2><p>No streams found for '+cat+'. Check back closer to match time.</p></div>';
-      countEl.textContent=''; return;
+    if (upcoming.length) {
+      upcoming.forEach(function(s){schedList.appendChild(renderSchedRow(s));});
+      schedSection.hidden=false;
+      schedCount.textContent=upcoming.length+' match'+(upcoming.length===1?'':'es');
+    } else {
+      schedSection.hidden=true;
     }
-    var grid=document.createElement('div'); grid.className='grid';
-    streams.forEach(function(s){grid.appendChild(renderCard(s));});
-    mainEl.innerHTML=''; mainEl.appendChild(grid);
-    countEl.textContent=streams.length+' stream'+(streams.length===1?'':'s');
+
+    if (!live.length && !upcoming.length) {
+      liveSection.hidden=false; liveGrid.innerHTML='';
+      var s=document.createElement('div'); s.className='state';
+      s.innerHTML='<div class="state-icon">'+(EMOJI[state.cat]||'📺')+'</div><h3>Nothing on right now</h3><p>No streams for '+(state.cat==='all'?'any sport':state.cat)+'. Check back closer to match time.</p>';
+      liveGrid.appendChild(s);
+    }
   }
 
-  function filter(){
-    var streams=state.category==='all'?state.streams:state.streams.filter(function(s){return s.category===state.category;});
-    renderGrid(streams);
-  }
-
-  function buildCats(categories){
+  function buildCats() {
     catsEl.innerHTML='';
-    ['all'].concat(categories).forEach(function(c){
+    var all = ['all'].concat(state.cats);
+    all.forEach(function(c){
+      var live = state.streams.filter(function(s){return isLive(s.match_timestamp)&&(c==='all'||s.category===c);}).length;
+      var total = c==='all'?state.streams.length:state.streams.filter(function(s){return s.category===c;}).length;
       var btn=document.createElement('button');
-      btn.className='cat'+(c===state.category?' active':''); btn.type='button';
-      btn.setAttribute('role','tab'); btn.setAttribute('aria-selected',c===state.category?'true':'false');
-      btn.textContent=c==='all'?'All':(EMOJI[c]?EMOJI[c]+' ':'')+c;
+      btn.className='cat-btn'+(c===state.cat?' active':'');
+      btn.setAttribute('role','tab'); btn.setAttribute('aria-selected',c===state.cat?'true':'false');
+      var emoji = c==='all'?'🏟':EMOJI[c]||'📺';
+      var label = c==='all'?'All':(SPORT_LABELS[c]||c);
+      btn.innerHTML='<span class="cat-emoji">'+emoji+'</span>'+label+'<span class="cat-count">'+total+'</span>';
       btn.addEventListener('click',function(){
-        state.category=c;
-        catsEl.querySelectorAll('.cat').forEach(function(b){b.classList.remove('active');b.setAttribute('aria-selected','false');});
-        btn.classList.add('active'); btn.setAttribute('aria-selected','true'); filter();
+        state.cat=c;
+        catsEl.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active');b.setAttribute('aria-selected','false');});
+        btn.classList.add('active'); btn.setAttribute('aria-selected','true');
+        render();
       });
       catsEl.appendChild(btn);
     });
   }
 
-  function showError(msg){
-    mainEl.innerHTML='<div class="state"><div class="state-icon">📡</div><h2>Couldn\'t load streams</h2><p>'+msg+'</p><button class="retry-btn" id="retry">Try again</button></div>';
-    document.getElementById('retry').addEventListener('click',load); countEl.textContent='';
+  function updatePills() {
+    var live=state.streams.filter(function(s){return isLive(s.match_timestamp);}).length;
+    var upcoming=state.streams.filter(function(s){return !isLive(s.match_timestamp);}).length;
+    liveN.textContent=live; liveCountPill.hidden=!live;
+    upcomingN.textContent=upcoming; upcomingPill.hidden=!upcoming;
   }
 
-  function load(){
+  function load() {
     var now=Date.now();
-    if(state.ts&&now-state.ts<CACHE_TTL){filter();return;}
-    mainEl.innerHTML='<div class="state"><div class="state-icon">📡</div><h2>Finding live streams…</h2><p>Checking what’s on right now.</p></div>';
+    if(state.ts&&now-state.ts<CACHE_TTL){render();return;}
     Promise.all([
       fetch(API+'/categories').then(function(r){return r.json();}),
       fetch(API+'/streams').then(function(r){return r.json();})
     ]).then(function(res){
-      state.categories=res[0].categories||[];
-      state.streams=(res[1].streams||[]).sort(function(a,b){
-        var al=isLive(a.match_timestamp)?0:1,bl=isLive(b.match_timestamp)?0:1;
-        if(al!==bl)return al-bl; return(a.match_timestamp||0)-(b.match_timestamp||0);
+      state.cats=res[0].categories||[];
+      state.streams=res[1].streams||[];
+      state.ts=Date.now();
+      loadingGrid.hidden=true;
+      buildCats(); updatePills(); render();
+    }).catch(function(){
+      loadingGrid.hidden=true;
+      liveSection.hidden=false; liveGrid.innerHTML='';
+      var s=document.createElement('div'); s.className='state';
+      s.innerHTML='<div class="state-icon">📡</div><h3>Couldn\'t load streams</h3><p>Check your connection and try again.</p><button class="retry-btn" id="retry">Retry</button>';
+      liveGrid.appendChild(s);
+      document.getElementById('retry').addEventListener('click',function(){
+        loadingGrid.hidden=false; liveSection.hidden=true; load();
       });
-      state.ts=Date.now(); buildCats(state.categories); filter();
-    }).catch(function(){showError('Could not reach the stream API. Make sure you’re online and try again.');});
+    });
   }
 
   load();
