@@ -286,6 +286,10 @@ header {
       </div>
     </div>
     <div class="quality-bar" id="quality-bar"></div>
+    <div id="external-bar" hidden style="margin-top:8px;display:flex;align-items:center;gap:8px;font:500 12px 'JetBrains Mono',monospace;color:var(--subtle)">
+      <span>Having trouble?</span>
+      <a id="external-link" href="#" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px">Open stream directly ↗</a>
+    </div>
 
     <div class="stream-info">
       <div class="stream-cat" id="s-cat"></div>
@@ -415,33 +419,45 @@ header {
     if(src===activeSrc)return; activeSrc=src;
     if(hlsInst){try{hlsInst.destroy();}catch(e){}hlsInst=null;}
     playerWrap.innerHTML='';
+    updateExternalLink(src);
 
     var isHls=/\.m3u8(\?|$)/i.test(src);
+    var canNativeHls=document.createElement('video').canPlayType('application/vnd.apple.mpegurl');
 
     if(isHls && window.Hls && Hls.isSupported()){
       var vid=document.createElement('video'); vid.controls=true; vid.autoplay=true; vid.playsInline=true;
       playerWrap.appendChild(vid);
-      hlsInst=new Hls({enableWorker:true,lowLatencyMode:true});
+      hlsInst=new Hls({enableWorker:true,lowLatencyMode:true,xhrSetup:function(xhr){xhr.withCredentials=false;}});
       hlsInst.loadSource(src); hlsInst.attachMedia(vid);
-      hlsInst.on(Hls.Events.ERROR,function(e,data){if(data.fatal)showFallback(src);});
-    } else if(isHls && document.createElement('video').canPlayType('application/vnd.apple.mpegurl')) {
+      hlsInst.on(Hls.Events.ERROR,function(e,data){
+        if(data.fatal){
+          // CORS or network error — fall through to iframe silently
+          if(hlsInst){try{hlsInst.destroy();}catch(ex){}hlsInst=null;}
+          playerWrap.innerHTML='';
+          loadIframe(src);
+        }
+      });
+    } else if(isHls && canNativeHls) {
       var vid=document.createElement('video'); vid.controls=true; vid.autoplay=true; vid.playsInline=true; vid.src=src;
       playerWrap.appendChild(vid);
     } else {
-      var iframe=document.createElement('iframe'); iframe.src=src; iframe.allowFullscreen=true;
-      iframe.allow='autoplay; fullscreen; picture-in-picture'; iframe.scrolling='no';
-      playerWrap.appendChild(iframe);
+      loadIframe(src);
     }
   }
 
-  function showFallback(src){
-    if(hlsInst){try{hlsInst.destroy();}catch(e){}hlsInst=null;}
-    playerWrap.innerHTML='';
-    var msg=document.createElement('div'); msg.className='player-msg';
-    var p=document.createElement('p'); p.textContent="This stream can't be embedded here.";
-    var btn=document.createElement('button'); btn.className='open-tab-btn'; btn.textContent='Open stream in new tab →';
-    btn.addEventListener('click',function(){window.open(src,'_blank','noopener');});
-    msg.appendChild(p); msg.appendChild(btn); playerWrap.appendChild(msg);
+  function loadIframe(src) {
+    var iframe=document.createElement('iframe');
+    iframe.src=src; iframe.allowFullscreen=true;
+    iframe.allow='autoplay; fullscreen; picture-in-picture'; iframe.scrolling='no';
+    // referrerpolicy helps with some embed providers
+    iframe.setAttribute('referrerpolicy','no-referrer-when-downgrade');
+    playerWrap.appendChild(iframe);
+  }
+
+  function updateExternalLink(src) {
+    var bar=document.getElementById('external-bar');
+    var link=document.getElementById('external-link');
+    if(bar&&link){ link.href=src; bar.style.display='flex'; bar.hidden=false; }
   }
 
   // ── quality bar ──
@@ -512,54 +528,79 @@ header {
 
   function initChat(chatId) {
     document.getElementById('chat-username-badge').textContent=username;
+    addSystemMsg('You joined as '+username);
 
-    if(!FIREBASE_READY||!db){
-      var chatInputRow=document.getElementById('chat-input-row');
-      chatInputRow.style.display='none';
-      spamWarn.style.display='none';
-      var disabled=document.createElement('div'); disabled.className='chat-disabled';
-      disabled.innerHTML='<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat requires Firebase.<br>Add your config to <code>watch.html</code></span>';
-      chatMsgsEl.appendChild(disabled);
-      return;
+    if(FIREBASE_READY && db) {
+      initFirebaseChat(chatId);
+    } else {
+      initLocalChat();
+    }
+  }
+
+  // ── local chat (works without Firebase — messages visible in this session only) ──
+  function initLocalChat() {
+    addSystemMsg('Live chat · session only — messages visible to you');
+
+    // Restore messages from sessionStorage so they survive navigation
+    var storeKey='kestrel_chat_'+location.search;
+    var stored=[];
+    try{stored=JSON.parse(sessionStorage.getItem(storeKey)||'[]');}catch(e){}
+    stored.forEach(function(m){appendMessage(m,m.key);});
+
+    // BroadcastChannel lets other tabs on the same browser share messages
+    var bc=null;
+    try{ if(typeof BroadcastChannel!=='undefined') bc=new BroadcastChannel('kestrel_chat_'+chatId); }catch(e){}
+    if(bc){
+      bc.onmessage=function(e){
+        if(e.data&&e.data.username!==username){appendMessage(e.data,e.data.key);}
+      };
     }
 
+    function sendMsg() {
+      var text=(chatInput.value||'').trim(); if(!text)return;
+      var warn=checkSpam(text); if(warn){showSpamWarn(warn);return;}
+      recordSend(text);
+      chatInput.value='';
+      var msg={text:text,username:username,ts:Date.now(),key:Date.now().toString(36)};
+      appendMessage(msg,msg.key);
+      // persist
+      try{
+        stored.push(msg);
+        if(stored.length>200)stored=stored.slice(-200);
+        sessionStorage.setItem(storeKey,JSON.stringify(stored));
+      }catch(e){}
+      // broadcast to other same-browser tabs
+      if(bc){try{bc.postMessage(msg);}catch(e){}}
+    }
+
+    chatSend.addEventListener('click',sendMsg);
+    chatInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+  }
+
+  // ── Firebase chat (cross-user real-time) ──
+  function initFirebaseChat(chatId) {
     var msgsRef=db.ref('chats/'+chatId+'/messages');
     var bannedRef=db.ref('banned');
-
-    // load banned users
     bannedRef.on('value',function(s){chatBannedUsers=s.val()||{};});
 
-    // listen for new messages
     var initialLoad=true;
     msgsRef.limitToLast(80).on('child_added',function(snap){
       var data=snap.val();
-      if(data&&!data.deleted){
-        if(chatBannedUsers[data.username])return;
-        appendMessage(data,snap.key);
-      }
-      if(initialLoad){chatMsgsEl.scrollTop=chatMsgsEl.scrollHeight;}
+      if(data&&!data.deleted&&!chatBannedUsers[data.username]) appendMessage(data,snap.key);
+      if(initialLoad) chatMsgsEl.scrollTop=chatMsgsEl.scrollHeight;
     });
     setTimeout(function(){initialLoad=false;},1000);
 
-    // listen for deletions
     msgsRef.on('child_changed',function(snap){
       var data=snap.val();
-      if(data&&data.deleted){
-        var el=chatMsgsEl.querySelector('[data-key="'+snap.key+'"]');
-        if(el) el.remove();
-      }
+      if(data&&data.deleted){var el=chatMsgsEl.querySelector('[data-key="'+snap.key+'"]');if(el)el.remove();}
     });
 
-    addSystemMsg('You joined as '+username);
-
     function sendMsg() {
-      var text=(chatInput.value||'').trim();
-      if(!text)return;
-      var warn=checkSpam(text);
-      if(warn){showSpamWarn(warn);return;}
+      var text=(chatInput.value||'').trim(); if(!text)return;
+      var warn=checkSpam(text); if(warn){showSpamWarn(warn);return;}
       if(chatBannedUsers[username]){showSpamWarn('You have been banned from chat.');return;}
-      recordSend(text);
-      chatInput.value='';
+      recordSend(text); chatInput.value='';
       msgsRef.push({text:text,username:username,ts:Date.now()});
     }
 
