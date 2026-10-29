@@ -3,590 +3,78 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Kestrel · Live Sports Streams</title>
-<meta name="description" content="Watch live sports streams — soccer, basketball, UFC, hockey and more. Free, no signup.">
-<meta property="og:title" content="Kestrel · Live Sports Streams">
-<meta property="og:description" content="Free live sports streams. No signup required.">
+<title>Kestrel · Games &amp; Projects</title>
+<meta name="description" content="A collection of my games and projects.">
+<meta property="og:title" content="Kestrel · Games &amp; Projects">
+<meta property="og:description" content="A collection of my games and projects.">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="assets/favicon-32.png">
 <style>
-:root {
-  --bg: #080b0f; --surface: #111519; --raise: #181e26; --card: #13181f;
-  --line: #222a35; --text: #e8edf3; --muted: #7a8799; --subtle: #3d4f62;
-  --accent: #5ec99a; --accent2: #3fa876; --on-accent: #021a0e;
-  --live: #ff3d3d; --live-glow: rgba(255,61,61,.25);
-  --soon: #f5a623; --blue: #4da3ff;
-  color-scheme: dark;
-}
-*, *::before, *::after { box-sizing: border-box }
-html { scroll-behavior: smooth }
-html, body { margin: 0 }
-body {
-  background: var(--bg); color: var(--text);
-  font: 400 15px/1.6 "Schibsted Grotesk", system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  min-height: 100dvh;
-}
-a { color: inherit; text-decoration: none }
-img { max-width: 100% }
-button { font-family: inherit }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px }
-
-/* ── header ── */
-header {
-  position: sticky; top: 0; z-index: 50;
-  background: rgba(8,11,15,.88); backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--line);
-}
-.header-inner {
-  display: flex; align-items: center; gap: 16px;
-  height: 58px; max-width: 1280px; margin: 0 auto;
-  padding: 0 max(20px, env(safe-area-inset-left));
-}
-.brand {
-  font: 800 22px/1 "Schibsted Grotesk", sans-serif; letter-spacing: -.05em;
-  flex: none; display: flex; align-items: center; gap: 6px; cursor: pointer;
-  text-decoration: none; color: var(--text);
-}
-.brand-dot { color: var(--accent); font-style: normal }
-.header-stats {
-  display: flex; gap: 14px; margin-left: auto; flex: none; align-items: center;
-}
-.stat-pill {
-  display: flex; align-items: center; gap: 5px;
-  padding: 4px 10px; border-radius: 999px;
-  border: 1px solid var(--line); background: var(--raise);
-  font: 600 11px "JetBrains Mono", monospace; color: var(--muted);
-}
-.stat-pill.live-pill { border-color: var(--live-glow); background: rgba(255,61,61,.08); color: var(--live) }
-.live-dot-sm {
-  width: 5px; height: 5px; border-radius: 50%; background: var(--live); flex: none;
-  animation: blink 1.4s ease-in-out infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
-
-.admin-link {
-  font: 500 12px "Schibsted Grotesk", sans-serif; color: var(--subtle);
-  padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line);
-  transition: color .15s, border-color .15s;
-}
-.admin-link:hover { color: var(--muted); border-color: var(--muted) }
-
-/* ── layout ── */
-.page { max-width: 1280px; margin: 0 auto; padding: 0 max(20px, env(safe-area-inset-left)) }
-
-/* ── category strip ── */
-.cat-strip { padding: 20px 0 0 }
-.cat-label { font: 700 10px "Schibsted Grotesk", sans-serif; letter-spacing: .1em; text-transform: uppercase; color: var(--subtle); margin-bottom: 10px }
-.cats { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px }
-.cats::-webkit-scrollbar { display: none }
-.cat-btn {
-  flex: none; display: flex; align-items: center; gap: 7px;
-  padding: 8px 16px; border-radius: 12px;
-  border: 1px solid var(--line); background: var(--raise);
-  color: var(--muted); cursor: pointer; white-space: nowrap;
-  font: 600 13px "Schibsted Grotesk", sans-serif;
-  transition: all .18s;
-}
-.cat-btn:hover { border-color: var(--muted); color: var(--text); background: var(--card) }
-.cat-btn.active {
-  background: var(--accent); color: var(--on-accent);
-  border-color: var(--accent); box-shadow: 0 0 18px rgba(94,201,154,.22);
-}
-.cat-btn .cat-emoji { font-size: 16px; line-height: 1 }
-.cat-count {
-  font: 500 10px "JetBrains Mono", monospace;
-  padding: 1px 6px; border-radius: 4px;
-  background: rgba(0,0,0,.2);
-}
-.cat-btn.active .cat-count { background: rgba(0,0,0,.18) }
-
-/* ── section headers ── */
-.section { padding-top: 28px }
-.section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px }
-.section-title {
-  font: 800 18px "Schibsted Grotesk", sans-serif; letter-spacing: -.03em;
-  display: flex; align-items: center; gap: 8px;
-}
-.section-live-badge {
-  background: var(--live); color: #fff;
-  font: 700 9px "Schibsted Grotesk", sans-serif; letter-spacing: .08em; text-transform: uppercase;
-  padding: 3px 7px; border-radius: 4px; vertical-align: middle;
-  display: inline-flex; align-items: center; gap: 4px;
-}
-.section-count { font: 500 13px "JetBrains Mono", monospace; color: var(--subtle); margin-left: auto }
-
-/* ── stream grid ── */
-.grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px }
-@media (max-width: 900px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)) } }
-@media (max-width: 560px) { .grid { grid-template-columns: minmax(0,1fr); gap: 12px } }
-
-/* ── card ── */
-.card {
-  background: var(--card); border: 1px solid var(--line); border-radius: 16px;
-  overflow: hidden; display: flex; flex-direction: column;
-  cursor: pointer; text-decoration: none; color: inherit;
-  transition: border-color .2s, box-shadow .2s, transform .2s;
-  position: relative;
-}
-.card:hover {
-  border-color: rgba(94,201,154,.35);
-  box-shadow: 0 12px 36px -10px rgba(0,0,0,.6), 0 0 0 1px rgba(94,201,154,.1);
-  transform: translateY(-2px);
-}
-.card.live-card { border-color: rgba(255,61,61,.3) }
-.card.live-card:hover { border-color: rgba(255,61,61,.6); box-shadow: 0 12px 36px -10px rgba(255,61,61,.2) }
-
-.thumb {
-  aspect-ratio: 16/9; background: var(--raise); position: relative;
-  overflow: hidden; display: flex; align-items: center; justify-content: center;
-}
-.thumb-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s }
-.card:hover .thumb-img { transform: scale(1.04) }
-.thumb-emoji { font-size: 44px; line-height: 1; opacity: .3; user-select: none }
-.thumb-img[hidden] { display: none }
-.overlay-gfx {
-  position: absolute; inset: 0;
-  background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,.7)); pointer-events: none;
-}
-.thumb-play {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  opacity: 0; transition: opacity .2s; background: rgba(0,0,0,.15);
-}
-.card:hover .thumb-play { opacity: 1 }
-.play-ring {
-  width: 54px; height: 54px; border-radius: 50%;
-  background: rgba(94,201,154,.2); border: 2px solid rgba(94,201,154,.6);
-  backdrop-filter: blur(8px);
-  display: flex; align-items: center; justify-content: center;
-  transform: scale(.8); transition: transform .2s;
-}
-.card:hover .play-ring { transform: scale(1) }
-
-.badge-row { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px }
-.live-badge {
-  background: var(--live); color: #fff;
-  font: 700 10px/1 "Schibsted Grotesk", sans-serif; letter-spacing: .06em; text-transform: uppercase;
-  padding: 4px 8px; border-radius: 5px; display: flex; align-items: center; gap: 4px;
-}
-.live-badge .ld { width: 5px; height: 5px; border-radius: 50%; background: #fff; animation: blink 1.4s infinite }
-.soon-badge {
-  background: rgba(0,0,0,.6); color: var(--soon);
-  font: 600 10px "JetBrains Mono", monospace; padding: 4px 8px; border-radius: 5px; backdrop-filter: blur(4px);
-}
-.q-row { position: absolute; bottom: 9px; right: 9px; display: flex; gap: 4px }
-.q-chip {
-  background: rgba(0,0,0,.6); color: rgba(255,255,255,.75);
-  font: 500 10px "JetBrains Mono", monospace; padding: 3px 6px; border-radius: 4px; backdrop-filter: blur(4px);
-}
-
-.card-body { padding: 14px 15px 0; flex: 1; display: flex; flex-direction: column; gap: 3px }
-.card-cat {
-  font: 700 10px "Schibsted Grotesk", sans-serif; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--accent); display: flex; align-items: center; gap: 4px;
-}
-.card-name { font: 700 15px/1.3 "Schibsted Grotesk", sans-serif; letter-spacing: -.02em; color: var(--text) }
-.card-league { font: 400 12px "Schibsted Grotesk", sans-serif; color: var(--muted) }
-.card-foot {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 15px 14px; margin-top: auto;
-}
-.card-time { font: 500 11px "JetBrains Mono", monospace; color: var(--subtle) }
-.card-action {
-  font: 700 12px "Schibsted Grotesk", sans-serif; color: var(--accent);
-  display: flex; align-items: center; gap: 4px;
-}
-
-/* ── schedule ── */
-.schedule-list { display: flex; flex-direction: column; gap: 1px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line) }
-.sched-row {
-  display: flex; align-items: center; gap: 14px; padding: 13px 16px;
-  background: var(--card); cursor: pointer; text-decoration: none; color: inherit;
-  border-bottom: 1px solid var(--line); transition: background .15s;
-}
-.sched-row:last-child { border-bottom: none }
-.sched-row:hover { background: var(--raise) }
-.sched-time {
-  font: 600 11px "JetBrains Mono", monospace; color: var(--soon);
-  min-width: 56px; flex: none;
-}
-.sched-emoji { font-size: 18px; flex: none; opacity: .8 }
-.sched-info { flex: 1; min-width: 0 }
-.sched-name { font: 600 14px "Schibsted Grotesk", sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
-.sched-league { font-size: 12px; color: var(--muted) }
-.sched-badge {
-  font: 600 10px "Schibsted Grotesk", sans-serif; letter-spacing: .06em;
-  padding: 3px 8px; border-radius: 5px; flex: none;
-  background: rgba(245,166,35,.12); color: var(--soon); border: 1px solid rgba(245,166,35,.25);
-}
-
-/* ── states ── */
-.state {
-  grid-column: 1/-1; text-align: center; padding: 64px 20px;
-  color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 12px;
-}
-.state-icon { font-size: 42px }
-.state h3 { margin: 0; font-size: 18px; color: var(--text); letter-spacing: -.02em }
-.state p { margin: 0; font-size: 14px; max-width: 28em }
-.retry-btn {
-  padding: 8px 20px; border-radius: 9px; border: 1px solid var(--line);
-  background: transparent; color: var(--text); font: 600 13px "Schibsted Grotesk", sans-serif; cursor: pointer;
-}
-.retry-btn:hover { border-color: var(--muted) }
-
-/* ── skeleton ── */
-.skeleton { background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid var(--line) }
-.skel-thumb { aspect-ratio: 16/9; background: var(--raise); position: relative; overflow: hidden }
-.skel-body { padding: 14px 15px }
-.skel-line {
-  height: 10px; border-radius: 5px; background: var(--line);
-  margin-bottom: 8px; animation: shimmer 1.6s ease-in-out infinite;
-}
-.skel-line.short { width: 60% }
-@keyframes shimmer {
-  0%,100% { opacity: .5 } 50% { opacity: 1 }
-}
-
-/* ── footer ── */
-footer {
-  border-top: 1px solid var(--line); margin-top: 48px;
-  padding: 20px max(20px, env(safe-area-inset-left)) 36px;
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--subtle);
-  max-width: 1280px; margin: 48px auto 0;
-}
-footer a:hover { color: var(--muted) }
-
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important } }
+:root{--bg:#0d0f14;--card:#171a22;--line:#262a35;--text:#e8eaf0;--mute:#8b91a1;--accent:#ff9f43}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+header{padding:64px 0 32px}
+header img{height:44px;margin-bottom:20px}
+h1{font-size:clamp(2rem,6vw,3.2rem);letter-spacing:-.02em}
+header p{color:var(--mute);margin-top:8px;max-width:520px}
+.tabs{display:flex;gap:8px;margin:8px 0 24px}
+.tabs button{background:none;border:1px solid var(--line);color:var(--mute);padding:6px 16px;border-radius:99px;cursor:pointer;font:inherit}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:#111}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;padding-bottom:64px}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;color:inherit;text-decoration:none;transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#222736,#141720);display:grid;place-items:center;font-size:2.4rem;font-weight:700;color:var(--accent);overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.body{padding:16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.kind{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
+.body h2{font-size:1.15rem}
+.body p{color:var(--mute);font-size:.92rem;flex:1}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tags span{font-size:.75rem;border:1px solid var(--line);color:var(--mute);padding:2px 8px;border-radius:99px}
+.empty{color:var(--mute);padding:40px 0}
+footer{border-top:1px solid var(--line);padding:24px 0;color:var(--mute);font-size:.85rem}
 </style>
 </head>
 <body>
-
-<header>
-  <div class="header-inner">
-    <a class="brand" href="/">k<em class="brand-dot">&middot;</em>strel</a>
-    <div class="header-stats">
-      <span class="stat-pill live-pill" id="live-count-pill" hidden>
-        <span class="live-dot-sm"></span><span id="live-n">0</span> live
-      </span>
-      <span class="stat-pill" id="upcoming-pill" hidden>
-        <span id="upcoming-n">0</span> upcoming
-      </span>
-      <a class="admin-link" href="admin.html">Admin</a>
-    </div>
+<div class="wrap">
+  <header>
+    <img src="assets/logo.png" alt="Kestrel" onerror="this.remove()">
+    <h1>Games &amp; Projects</h1>
+    <p>Things I've built. Click anything to play or take a look.</p>
+  </header>
+  <div class="tabs" id="tabs">
+    <button data-f="all" class="on">All</button>
+    <button data-f="game">Games</button>
+    <button data-f="project">Projects</button>
   </div>
-</header>
-
-<div class="page">
-  <div class="cat-strip">
-    <div class="cats" id="cats" role="tablist" aria-label="Filter by sport"></div>
-  </div>
-
-  <section class="section" id="live-section" hidden>
-    <div class="section-head">
-      <h2 class="section-title">
-        Live Now
-        <span class="section-live-badge"><span class="live-dot-sm"></span>LIVE</span>
-      </h2>
-      <span class="section-count" id="live-count"></span>
-    </div>
-    <div class="grid" id="live-grid"></div>
-  </section>
-
-  <section class="section" id="sched-section" hidden>
-    <div class="section-head">
-      <h2 class="section-title">Schedule</h2>
-      <span class="section-count" id="sched-count"></span>
-    </div>
-    <div class="schedule-list" id="sched-list"></div>
-  </section>
-
-  <div class="grid" id="loading-grid" style="padding-top:28px">
-    <div class="skeleton"><div class="skel-thumb"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
-    <div class="skeleton"><div class="skel-thumb"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
-    <div class="skeleton"><div class="skel-thumb"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
-  </div>
+  <main class="grid" id="grid"></main>
+  <footer>© <span id="y"></span> Kestrel</footer>
 </div>
-
-<footer>
-  <span>kestrel &middot; live sports streams</span>
-  <a href="https://strmfree.st" target="_blank" rel="noopener">powered by StreamFree</a>
-</footer>
-
+<script src="projects.js"></script>
 <script>
-(function () {
-  var API = 'https://streamfree.top/api/v1';
-  var CACHE_TTL = 60000;
-  var EMOJI = { soccer:'⚽', basketball:'🏀', hockey:'🏒', combat:'🥊', baseball:'⚾', football:'🏈', racing:'🏎', tennis:'🎾', cricket:'🏏' };
-  var SPORT_LABELS = { soccer:'Soccer', basketball:'Basketball', hockey:'Hockey', combat:'Combat', baseball:'Baseball', football:'Football', racing:'Racing', tennis:'Tennis', cricket:'Cricket' };
-  var SPORT_HUE = { soccer:145, basketball:28, hockey:210, combat:0, baseball:40, football:155, racing:24, tennis:130, cricket:100 };
-
-  // ── thumbnail generator ──
-  function nameHue(str) {
-    var h = 0;
-    for (var i = 0; i < str.length; i++) h = (str.charCodeAt(i) + ((h << 5) - h)) & 0x7fffffff;
-    return h % 360;
-  }
-
-  function makeThumbnail(s) {
-    var W = 320, H = 180;
-    var canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    var ctx = canvas.getContext('2d');
-
-    var baseHue = SPORT_HUE[s.category] != null ? SPORT_HUE[s.category] : 220;
-    var vsMatch = (s.name || '').match(/^(.+?)\s+vs\.?\s+(.+)$/i);
-    var t1 = vsMatch ? vsMatch[1].trim() : '';
-    var t2 = vsMatch ? vsMatch[2].trim() : '';
-    var isVs = !!(t1 && t2);
-
-    function abbr(name) {
-      return name.split(/\s+/).map(function(w) { return (w[0] || '').toUpperCase(); }).join('').slice(0, 3) || name.slice(0, 3).toUpperCase();
-    }
-    function truncate(str, n) { return str.length > n ? str.slice(0, n - 1) + '…' : str; }
-
-    if (isVs) {
-      var h1 = nameHue(t1), h2 = nameHue(t2);
-      var g1 = ctx.createLinearGradient(0, 0, W * 0.6, H);
-      g1.addColorStop(0, 'hsl(' + h1 + ',50%,28%)'); g1.addColorStop(1, 'hsl(' + h1 + ',45%,18%)');
-      ctx.fillStyle = g1;
-      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(W*0.58,0); ctx.lineTo(W*0.42,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
-      var g2 = ctx.createLinearGradient(W * 0.4, 0, W, H);
-      g2.addColorStop(0, 'hsl(' + h2 + ',45%,18%)'); g2.addColorStop(1, 'hsl(' + h2 + ',50%,28%)');
-      ctx.fillStyle = g2;
-      ctx.beginPath(); ctx.moveTo(W*0.58,0); ctx.lineTo(W,0); ctx.lineTo(W,H); ctx.lineTo(W*0.42,H); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(W*0.58,0); ctx.lineTo(W*0.42,H); ctx.stroke();
-      ctx.font = 'bold 58px Arial,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = 'rgba(255,255,255,0.12)';
-      ctx.fillText(abbr(t1), W*0.24, H*0.52); ctx.fillText(abbr(t2), W*0.76, H*0.52);
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.beginPath(); ctx.arc(W/2, H/2, 14, 0, Math.PI*2); ctx.fill();
-      ctx.font = 'bold 10px Arial,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.92)';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('VS', W/2, H/2);
-      ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(0, H-26, W, 26);
-      ctx.font = 'bold 10px Arial,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.82)'; ctx.textBaseline = 'middle';
-      ctx.textAlign = 'left';  ctx.fillText(truncate(t1, 18), 10, H-13);
-      ctx.textAlign = 'right'; ctx.fillText(truncate(t2, 18), W-10, H-13);
-      if (s.league) {
-        ctx.font = '10px Arial,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-        ctx.fillText(truncate(s.league, 36), W/2, 8);
-      }
-    } else {
-      var g = ctx.createLinearGradient(0, 0, W, H);
-      g.addColorStop(0, 'hsl(' + baseHue + ',40%,13%)'); g.addColorStop(1, 'hsl(' + baseHue + ',35%,22%)');
-      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.font = 'bold 14px Arial,sans-serif';
-      ctx.fillText(truncate(s.name || '', 34), W/2, s.league ? H/2-10 : H/2);
-      if (s.league) {
-        ctx.font = '11px Arial,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.42)';
-        ctx.fillText(truncate(s.league, 34), W/2, H/2+12);
-      }
-    }
-    ctx.fillStyle = 'rgba(94,201,154,0.4)'; ctx.fillRect(0, H-3, W, 3);
-    try { return canvas.toDataURL('image/jpeg', 0.82); } catch(e) { return ''; }
-  }
-
-  var state = { cat: 'all', streams: [], cats: [], ts: 0 };
-  var loadingGrid = document.getElementById('loading-grid');
-  var liveSection = document.getElementById('live-section');
-  var liveGrid    = document.getElementById('live-grid');
-  var liveCount   = document.getElementById('live-count');
-  var schedSection = document.getElementById('sched-section');
-  var schedList   = document.getElementById('sched-list');
-  var schedCount  = document.getElementById('sched-count');
-  var catsEl      = document.getElementById('cats');
-  var liveCountPill = document.getElementById('live-count-pill');
-  var liveN       = document.getElementById('live-n');
-  var upcomingPill = document.getElementById('upcoming-pill');
-  var upcomingN   = document.getElementById('upcoming-n');
-
-  function slugify(str) { return (str||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
-  function streamUrl(s) { return 'watch.html?id='+encodeURIComponent(slugify(s.name))+'&ts='+(s.match_timestamp||0); }
-
-  function isLive(ts) { return !ts || ts <= Date.now()/1000 + 300; }
-
-  function fmt(ts) {
-    if (!ts) return '';
-    var diff = ts*1000 - Date.now();
-    if (Math.abs(diff) < 4*3600000) {
-      if (diff < 0) return 'started '+fmtRel(Math.abs(diff))+' ago';
-      return 'in '+fmtRel(diff);
-    }
-    var d = new Date(ts*1000);
-    return d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+' · '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
-  }
-  function fmtShort(ts) {
-    var d = new Date(ts*1000);
-    var diff = ts*1000 - Date.now();
-    if (diff < 24*3600000) return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
-    return d.toLocaleDateString([],{weekday:'short'})+' '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
-  }
-  function fmtRel(ms) { var m=Math.round(ms/60000); return m<60?m+'m':Math.round(m/60)+'h'; }
-  function qualityLabel(url) { var m=url.match(/(\d{3,4}p)/i); return m?m[1].toLowerCase():null; }
-  function bestSource(sources) {
-    var pref=['1080p','720p','540p','480p','360p'];
-    for(var i=0;i<pref.length;i++) for(var j=0;j<sources.length;j++) if(qualityLabel(sources[j])===pref[i]) return sources[j];
-    return sources[0]||null;
-  }
-
-  function renderCard(s) {
-    var live = isLive(s.match_timestamp);
-    var sources = s.sources||[];
-    var qualities = sources.map(qualityLabel).filter(Boolean).filter(function(q,i,a){return a.indexOf(q)===i;});
-    var emoji = EMOJI[s.category]||'📺';
-
-    var a = document.createElement('a');
-    a.className = 'card'+(live?' live-card':'');
-    a.href = streamUrl(s);
-
-    // thumb
-    var thumb = document.createElement('div'); thumb.className='thumb';
-    var thumbSrc = makeThumbnail(s);
-    if (thumbSrc) {
-      var img = document.createElement('img'); img.className='thumb-img'; img.alt=s.name; img.src=thumbSrc; thumb.appendChild(img);
-    } else {
-      var fb = document.createElement('div'); fb.className='thumb-emoji'; fb.textContent=emoji; thumb.appendChild(fb);
-    }
-    thumb.appendChild(Object.assign(document.createElement('div'),{className:'overlay-gfx'}));
-    var tp=document.createElement('div'); tp.className='thumb-play';
-    var pr=document.createElement('div'); pr.className='play-ring';
-    pr.innerHTML='<svg width="18" height="18" viewBox="0 0 12 12" fill="white"><path d="M2.5 1.8C2.5 1.2 3.17.92 3.65 1.27l7 4.5a.75.75 0 0 1 0 1.06l-7 4.5C3.17 11.08 2.5 10.8 2.5 10.2v-8.4Z"/></svg>';
-    tp.appendChild(pr); thumb.appendChild(tp);
-
-    var badgeRow=document.createElement('div'); badgeRow.className='badge-row';
-    if (live) {
-      var lb=document.createElement('div'); lb.className='live-badge'; lb.innerHTML='<span class="ld"></span>LIVE'; badgeRow.appendChild(lb);
-    } else if (s.match_timestamp) {
-      var sb=document.createElement('div'); sb.className='soon-badge'; sb.textContent=fmt(s.match_timestamp); badgeRow.appendChild(sb);
-    }
-    thumb.appendChild(badgeRow);
-
-    if (qualities.length) {
-      var qr=document.createElement('div'); qr.className='q-row';
-      qualities.slice(0,3).forEach(function(q){var c=document.createElement('span');c.className='q-chip';c.textContent=q;qr.appendChild(c);});
-      thumb.appendChild(qr);
-    }
-    a.appendChild(thumb);
-
-    // body
-    var body=document.createElement('div'); body.className='card-body';
-    var ct=document.createElement('div'); ct.className='card-cat'; ct.textContent=(emoji+' ')+(SPORT_LABELS[s.category]||s.category||''); body.appendChild(ct);
-    var cn=document.createElement('div'); cn.className='card-name'; cn.textContent=s.name; body.appendChild(cn);
-    if(s.league){var cl=document.createElement('div');cl.className='card-league';cl.textContent=s.league;body.appendChild(cl);}
-    a.appendChild(body);
-
-    var foot=document.createElement('div'); foot.className='card-foot';
-    var ct2=document.createElement('span'); ct2.className='card-time'; ct2.textContent=live?'On now':fmt(s.match_timestamp); foot.appendChild(ct2);
-    var ca=document.createElement('span'); ca.className='card-action'; ca.innerHTML='Watch <svg width="11" height="11" viewBox="0 0 10 10" fill="currentColor"><path d="M1.5.7A.75.75 0 0 0 .7 1.5v7a.75.75 0 0 0 1.21.59l5-3.5a.75.75 0 0 0 0-1.18l-5-3.5A.75.75 0 0 0 1.5.7Z"/></svg>'; foot.appendChild(ca);
-    a.appendChild(foot);
-    return a;
-  }
-
-  function renderSchedRow(s) {
-    var emoji = EMOJI[s.category]||'📺';
-    var a=document.createElement('a'); a.className='sched-row'; a.href=streamUrl(s);
-    var st=document.createElement('span'); st.className='sched-time'; st.textContent=fmtShort(s.match_timestamp); a.appendChild(st);
-    var se=document.createElement('span'); se.className='sched-emoji'; se.textContent=emoji; a.appendChild(se);
-    var si=document.createElement('div'); si.className='sched-info';
-    var sn=document.createElement('div'); sn.className='sched-name'; sn.textContent=s.name; si.appendChild(sn);
-    if(s.league){var sl=document.createElement('div');sl.className='sched-league';sl.textContent=s.league;si.appendChild(sl);}
-    a.appendChild(si);
-    var badge=document.createElement('span'); badge.className='sched-badge'; badge.textContent='Upcoming'; a.appendChild(badge);
-    return a;
-  }
-
-  function render() {
-    var streams = state.cat==='all' ? state.streams : state.streams.filter(function(s){return s.category===state.cat;});
-    var live = streams.filter(function(s){return isLive(s.match_timestamp);});
-    var upcoming = streams.filter(function(s){return !isLive(s.match_timestamp);}).sort(function(a,b){return a.match_timestamp-b.match_timestamp;});
-
-    liveGrid.innerHTML=''; schedList.innerHTML='';
-
-    if (live.length) {
-      live.forEach(function(s){liveGrid.appendChild(renderCard(s));});
-      liveSection.hidden=false;
-      liveCount.textContent=live.length+' stream'+(live.length===1?'':'s');
-    } else {
-      liveSection.hidden=true;
-    }
-
-    if (upcoming.length) {
-      upcoming.forEach(function(s){schedList.appendChild(renderSchedRow(s));});
-      schedSection.hidden=false;
-      schedCount.textContent=upcoming.length+' match'+(upcoming.length===1?'':'es');
-    } else {
-      schedSection.hidden=true;
-    }
-
-    if (!live.length && !upcoming.length) {
-      liveSection.hidden=false; liveGrid.innerHTML='';
-      var s=document.createElement('div'); s.className='state';
-      s.innerHTML='<div class="state-icon">'+(EMOJI[state.cat]||'📺')+'</div><h3>Nothing on right now</h3><p>No streams for '+(state.cat==='all'?'any sport':state.cat)+'. Check back closer to match time.</p>';
-      liveGrid.appendChild(s);
-    }
-  }
-
-  function buildCats() {
-    catsEl.innerHTML='';
-    var all = ['all'].concat(state.cats);
-    all.forEach(function(c){
-      var live = state.streams.filter(function(s){return isLive(s.match_timestamp)&&(c==='all'||s.category===c);}).length;
-      var total = c==='all'?state.streams.length:state.streams.filter(function(s){return s.category===c;}).length;
-      var btn=document.createElement('button');
-      btn.className='cat-btn'+(c===state.cat?' active':'');
-      btn.setAttribute('role','tab'); btn.setAttribute('aria-selected',c===state.cat?'true':'false');
-      var emoji = c==='all'?'🏟':EMOJI[c]||'📺';
-      var label = c==='all'?'All':(SPORT_LABELS[c]||c);
-      btn.innerHTML='<span class="cat-emoji">'+emoji+'</span>'+label+'<span class="cat-count">'+total+'</span>';
-      btn.addEventListener('click',function(){
-        state.cat=c;
-        catsEl.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active');b.setAttribute('aria-selected','false');});
-        btn.classList.add('active'); btn.setAttribute('aria-selected','true');
-        render();
-      });
-      catsEl.appendChild(btn);
-    });
-  }
-
-  function updatePills() {
-    var live=state.streams.filter(function(s){return isLive(s.match_timestamp);}).length;
-    var upcoming=state.streams.filter(function(s){return !isLive(s.match_timestamp);}).length;
-    liveN.textContent=live; liveCountPill.hidden=!live;
-    upcomingN.textContent=upcoming; upcomingPill.hidden=!upcoming;
-  }
-
-  function load() {
-    var now=Date.now();
-    if(state.ts&&now-state.ts<CACHE_TTL){render();return;}
-    Promise.all([
-      fetch(API+'/categories').then(function(r){return r.json();}),
-      fetch(API+'/streams').then(function(r){return r.json();})
-    ]).then(function(res){
-      state.cats=res[0].categories||[];
-      state.streams=res[1].streams||[];
-      state.ts=Date.now();
-      loadingGrid.hidden=true;
-      buildCats(); updatePills(); render();
-    }).catch(function(){
-      loadingGrid.hidden=true;
-      liveSection.hidden=false; liveGrid.innerHTML='';
-      var s=document.createElement('div'); s.className='state';
-      s.innerHTML='<div class="state-icon">📡</div><h3>Couldn\'t load streams</h3><p>Check your connection and try again.</p><button class="retry-btn" id="retry">Retry</button>';
-      liveGrid.appendChild(s);
-      document.getElementById('retry').addEventListener('click',function(){
-        loadingGrid.hidden=false; liveSection.hidden=true; load();
-      });
-    });
-  }
-
-  load();
-})();
+const grid=document.getElementById('grid');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function render(f){
+  const list=PROJECTS.filter(p=>f==='all'||p.type===f);
+  grid.innerHTML=list.length?list.map(p=>`
+    <a class="card" href="${esc(p.link)}">
+      <div class="thumb">${p.image?`<img src="${esc(p.image)}" alt="" loading="lazy">`:esc(p.title[0])}</div>
+      <div class="body">
+        <div class="kind">${esc(p.type)}</div>
+        <h2>${esc(p.title)}</h2>
+        <p>${esc(p.description)}</p>
+        <div class="tags">${(p.tags||[]).map(t=>`<span>${esc(t)}</span>`).join('')}</div>
+      </div>
+    </a>`).join(''):'<p class="empty">Nothing here yet.</p>';
+}
+document.getElementById('tabs').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  render(b.dataset.f);
+};
+document.getElementById('y').textContent=new Date().getFullYear();
+render('all');
 </script>
 </body>
 </html>

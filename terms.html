@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terms of Service - Kestrel</title>
+<meta name="description" content="The terms for using the Kestrel desktop app and kestrelai.online.">
+<meta name="theme-color" content="#0B3D2E">
+<link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Kestrel Terms of Service">
+<meta property="og:description" content="The terms for using Kestrel.">
+<meta property="og:image" content="https://kestrelai.online/assets/og-banner.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#101318; --desk:#0b0e12; --panel:#171b22; --raise:#1e232c; --line:#2b323d;
+  --text:#eef1f5; --muted:#8c96a5; --accent:#6fcfa6; --on-accent:#04140d;
+  --add-bg:#16301f; --add:#6fdc96; --del-bg:#3a1d22; --del:#ff8a8f;
+  --ok:#30d158; --danger:#ff6b6b;
+  --k-read:#64a8ff; --k-edit:#ff9f43; --k-run:#30d158; --k-search:#bf5af2; --k-web:#5ac8fa;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --ink:#f4f6f9; --desk:#e6eaf0; --panel:#ffffff; --raise:#eef1f6; --line:#d6dce5;
+    --text:#14181f; --muted:#5b6574; --accent:#0B3D2E; --on-accent:#fff;
+    --add-bg:#dff3e6; --add:#146c37; --del-bg:#fbe3e5; --del:#a4252d;
+    --k-read:#2f7be0; --k-edit:#d9760f; --k-run:#1b9a42; --k-search:#9a3fd0; --k-web:#1b8ab8;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ink);color:var(--text);font:400 17px/1.6 "Schibsted Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+header.top{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.01em;text-decoration:none}
+.brand img{width:30px;height:30px;display:block}
+.brand span{text-transform:lowercase;letter-spacing:-.03em;font-size:22px}
+nav a{margin-left:24px;color:var(--muted);text-decoration:none;font-size:15px}
+nav a:hover{color:var(--text)}
+
+.hero{padding:48px 0 32px;max-width:760px}
+h1{font-size:clamp(40px,6vw,72px);line-height:1.02;letter-spacing:-.04em;font-weight:800;margin:0 0 22px}
+.lede{color:var(--muted);font-size:20px;max-width:36em;margin:0 0 30px}
+.cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.btn{display:inline-block;background:var(--accent);color:var(--on-accent);font-weight:700;padding:13px 22px;border-radius:10px;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn[aria-disabled="true"]{opacity:.6;cursor:default}
+.note{color:var(--muted);font-size:14px;margin:14px 0 0}
+
+footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.doc{max-width:720px;padding:24px 0 72px}
+.doc h1{font-size:clamp(34px,5vw,52px);margin:0 0 8px}
+.doc .meta{color:var(--muted);font-size:15px;margin:0 0 36px}
+.doc h2{font-size:22px;letter-spacing:-.02em;margin:40px 0 8px}
+.doc ul{padding-left:22px}
+.doc li{margin:6px 0}
+.doc a{color:var(--accent);text-underline-offset:3px}
+footer a{text-underline-offset:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/" aria-label="Kestrel home"><picture><source srcset="assets/icon.svg" media="(prefers-color-scheme: light)"><img src="assets/icon-light.svg" alt="" width="30" height="30" style="width:30px;height:30px"></picture><span>kestrel</span></a>
+    <nav><a href="/">Home</a><a href="/#download">Download</a></nav>
+  </header>
+  <main class="doc">
+    <h1>Terms of Service</h1>
+    <p class="meta">Last updated: October 13, 2026</p>
+    <p>These terms cover your use of the Kestrel desktop app and the kestrelai.online website (together, "Kestrel"). By installing or using Kestrel you agree to them. If you don't agree, don't use it.</p>
+    <h2>1. What Kestrel is</h2>
+    <p>Kestrel is a desktop control panel for AI coding agents. It does not run a model itself. It launches agents that are already installed on your computer, such as Claude Code and Codex, or an Anthropic-compatible endpoint you configure. It shows their conversations and the file changes they make, and lets you review those changes and commit them with Git.</p>
+    <h2>2. Third-party agents and providers</h2>
+    <ul>
+      <li>Agents and model providers are separate products run by other companies. Your use of them is governed by their own terms, pricing and policies, and you are responsible for following them.</li>
+      <li>You need your own accounts, subscriptions or API keys for those services. Kestrel is not affiliated with or endorsed by Anthropic, OpenAI or any other provider.</li>
+      <li>Costs charged by a provider, including usage from agents you start, are yours. Usage figures shown in Kestrel are informational and may be incomplete or out of date.</li>
+    </ul>
+    <h2>3. Your projects and your content</h2>
+    <p>Your code, files, prompts and agent output stay yours. Kestrel claims no rights to them. You give Kestrel only the permission it needs to read and write the folders you point it at, so it can do what you ask.</p>
+    <p>You are responsible for what you ask agents to do and for the content you work with. Make sure you have the right to use any code, data or other material you give an agent.</p>
+    <h2>4. Reviewing agent changes</h2>
+    <p>AI agents make mistakes. They can write incorrect, insecure or destructive code and can run commands you did not expect. Kestrel puts a review step between an agent's edits and your committed work, but it cannot guarantee that every change is correct or safe. You decide what to accept, reject, run and commit. Review changes, keep backups, and use version control.</p>
+    <p>If you turn on an auto-approve setting, agents can run actions without asking first. That is your choice and your risk.</p>
+    <h2>5. Data and privacy</h2>
+    <ul>
+      <li>Kestrel has no account system and no hosted backend. Threads, messages and settings are stored locally on your computer.</li>
+      <li>Provider API keys are stored in your operating system's credential store, not in plain text files.</li>
+      <li>When an agent runs, your prompts and the files it reads are sent to that agent's provider under the provider's terms and privacy policy. Kestrel does not control that.</li>
+      <li>Kestrel does not sell your data.</li>
+    </ul>
+    <h2>6. Acceptable use</h2>
+    <p>Don't use Kestrel to break the law, to violate someone else's rights, to attack or disrupt systems you don't own or have permission to test, or to break the terms of the agents and providers you connect. Don't reverse engineer, resell or redistribute Kestrel except where the law allows it or we have said so in writing.</p>
+    <h2>7. Ownership of Kestrel</h2>
+    <p>Kestrel, including its name, logo, interface, 3D office models and artwork, belongs to its authors and licensors, except for third-party material that carries its own license, such as public-domain paintings. These terms give you a personal, non-exclusive, non-transferable license to install and use Kestrel for your own work. They do not transfer ownership of Kestrel to you.</p>
+    <h2>8. Alpha software</h2>
+    <p>Kestrel is early software and is changing quickly. Features may change, break or be removed, and local data formats may change between versions. Back up anything you care about.</p>
+    <h2>9. No warranty</h2>
+    <p>Kestrel is provided "as is" and "as available", without warranties of any kind, express or implied, including fitness for a particular purpose, accuracy, reliability and non-infringement. We do not promise that Kestrel will be uninterrupted or error-free, or that agent output will be correct.</p>
+    <h2>10. Limit of liability</h2>
+    <p>To the fullest extent the law allows, Kestrel's authors will not be liable for any indirect, incidental, special, consequential or punitive damages, or for loss of data, code, profits or business, arising from your use of Kestrel or from anything an agent does through it. Where liability cannot be excluded, it is limited to the amount you paid for Kestrel in the twelve months before the claim, or zero if you paid nothing. Some places do not allow these limits, so they may apply to you only in part.</p>
+    <h2>11. Ending use</h2>
+    <p>You can stop using Kestrel at any time by uninstalling it. We may suspend or end access to Kestrel or the website at any time, for example if these terms are broken. Sections that by their nature should survive, including 3, 7, 9 and 10, will survive.</p>
+    <h2>12. Governing law</h2>
+    <p>These terms are governed by the laws of the Commonwealth of Kentucky, United States, without regard to its conflict-of-law rules. Any dispute about these terms or Kestrel will be brought in the state or federal courts located in Kentucky, and you consent to their jurisdiction, except where the law of your place of residence requires otherwise.</p>
+
+    <h2>13. Changes to these terms</h2>
+    <p>We may update these terms as Kestrel changes. The date at the top shows when they last changed. If you keep using Kestrel after an update, you accept the new terms.</p>
+    <h2>14. Contact</h2>
+    <p>Questions about these terms: use the contact details published at <a href="https://kestrelai.online">kestrelai.online</a>.</p>
+  </main>
+  <footer><span class="brand" style="font-size:16px"><picture><source srcset="assets/icon.svg" media="(prefers-color-scheme: light)"><img src="assets/icon-light.svg" alt="" width="22" height="22" style="width:22px;height:22px"></picture><span style="font-size:17px">Kestrel</span></span><span><a href="terms.html">Terms</a> &middot; kestrelai.online</span></footer>
+</div>
+</body>
+</html>
