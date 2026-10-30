@@ -270,6 +270,25 @@ body.home-mode .app{visibility:hidden}
 .modebtn{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:15;font:inherit;font-size:.74rem;font-weight:800;color:#fff;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(6px);opacity:.7;transition:opacity .2s}
 .modebtn:hover{opacity:1}
 @media(max-width:640px){.hbar span:not(:first-child){display:none}.hs-note,.hs-user{display:none}.htitle{left:calc(var(--lead) + var(--ht)*1.7 + 14px)}}
+/* schedule */
+.sched{position:fixed;inset:0;z-index:18;display:none;flex-direction:column;background:#070a1c;color:#fff;font-family:'Nunito',system-ui,sans-serif}
+.sched.open{display:flex}
+.sc-top{display:flex;align-items:center;gap:14px;padding:max(14px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));background:linear-gradient(180deg,#0f2a8f,#070a1c)}
+.sc-top h2{margin:0;font-family:'Fredoka',sans-serif;font-size:clamp(1.2rem,3vw,1.7rem)}.sc-top small{opacity:.7;margin-left:auto}
+.sc-days{display:flex;gap:8px;padding:6px max(16px,env(safe-area-inset-right)) 12px max(16px,env(safe-area-inset-left));overflow-x:auto;scrollbar-width:none;flex:none}
+.sc-days::-webkit-scrollbar{display:none}
+.sd{flex:none;min-width:84px;padding:8px 12px;border-radius:14px;background:rgba(255,255,255,.08);border:2px solid transparent;color:#fff;font:inherit;text-align:center;cursor:pointer;display:flex;flex-direction:column;line-height:1.2}
+.sd b{font-size:.95rem}.sd span{font-size:.75rem;opacity:.75}.sd.on{background:#fff;color:#0a1a5c}.sd:hover{border-color:rgba(255,255,255,.5)}
+.sc-list{flex:1;overflow-y:auto;padding:4px max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:6px;max-width:900px;width:100%;margin:0 auto}
+.sc-h{margin:12px 0 2px;font-weight:800;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;opacity:.6}
+.srow{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.07);border:2px solid transparent;color:#fff;font:inherit;text-align:left;cursor:pointer;width:100%}
+.srow:hover,.srow:focus-visible{border-color:#fff;outline:0;background:rgba(255,255,255,.12)}
+.srow .t{flex:none;width:4.6em;font-variant-numeric:tabular-nums;font-weight:800}
+.srow .lg{flex:none;width:34px;height:34px;display:grid;place-items:center}.srow .lg img{max-width:100%;max-height:100%;object-fit:contain}.srow .lg svg{width:100%;height:100%}
+.srow .n{flex:1;min-width:0;display:flex;flex-direction:column}.srow .n b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.srow .n small{opacity:.7}
+.srow .st{flex:none;font-weight:800;font-size:.8rem}.srow .st.live{color:#ff7d92}
+.sc-empty{margin:auto;opacity:.7;text-align:center;padding:40px 0}
+.tab.sch{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:6px}.tab.sch svg{width:1.1em;height:1.1em}
 </style>
 </head>
 <body>
@@ -302,6 +321,12 @@ body.home-mode .app{visibility:hidden}
   <div class="hbar"><span><kbd>Enter</kbd>Select</span><span><kbd>← →</kbd>Browse</span><span><kbd>↑ ↓</kbd>Move</span><span><kbd>M</kbd>Switch menu</span></div>
 </div>
 <button class="modebtn" id="modeBtn" title="Switch between the home menu and the classic menu"></button>
+
+<div class="sched" id="sched" role="dialog" aria-label="Schedule">
+  <div class="sc-top"><button class="pb" id="scBack">← Back</button><h2>Schedule</h2><small>Next 7 days</small></div>
+  <div class="sc-days" id="scDays"></div>
+  <div class="sc-list" id="scList"></div>
+</div>
 
 <div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="pTitle">
   <div class="sheet" id="sheet"></div>
@@ -438,7 +463,7 @@ function list(){
 function drawChrome(){
   $('tabs').innerHTML=TABS.map(([k,l],i)=>{
     const n=events.filter(e=>(sport==='all'||e.sport===sport)&&(k==='all'||stat(e)===k)).length;
-    return`<button class="tab${i===tab?' on':''}${mode==='tabs'&&i===tab?' kb':''}" data-i="${i}">${l}<small>${n}</small></button>`}).join('');
+    return`<button class="tab${i===tab?' on':''}${mode==='tabs'&&i===tab?' kb':''}" data-i="${i}">${l}<small>${n}</small></button>`}).join('')+`<button class="tab sch" data-sched="1">${ic('cal')} Schedule</button>`;
   const have=[...new Set(events.map(e=>e.sport))];
   $('chips').innerHTML=`<button class="chip${sport==='all'?' on':''}" data-s="all" title="All sports">${ic('all')}</button>`+
     have.map(k=>`<button class="chip${sport===k?' on':''}" data-s="${k}" title="${esc(SP[k][1])}">${ic(k)}</button>`).join('')
@@ -508,10 +533,11 @@ function setView(h){home=h;try{localStorage.kview=h?'home':'classic'}catch(_){}
   if(h)homeDraw(true);else draw(true)}
 const visEv=()=>events;
 function hItems(){const v=visEv(),c=k=>v.filter(e=>stat(e)===k).length,sp={};
-  const out=[['live','Live now','live',c('live')],['up','Up next','up',c('up')],['done','Finished','done',c('done')],['all','Everything','all',v.length]];
+  const out=[['live','Live now','live',c('live')],['up','Up next','up',c('up')],['done','Finished','done',c('done')],['all','Everything','all',v.length],['sched','Schedule','cal',7]];
   v.forEach(e=>sp[e.sport]=(sp[e.sport]||0)+1);
   Object.keys(sp).sort((a,b)=>sp[b]-sp[a]).forEach(k=>out.push(['sp:'+k,SP[k][1],k,sp[k]]));return out}
-function hEvents(it){const v=visEv().filter(e=>it[0].startsWith('sp:')?e.sport===it[0].slice(3):it[0]==='all'||stat(e)===it[0]);
+function hEvents(it){if(it[0]==='sched')return[];
+  const v=visEv().filter(e=>it[0].startsWith('sp:')?e.sport===it[0].slice(3):it[0]==='all'||stat(e)===it[0]);
   const rank={live:0,up:1,done:2};
   return v.sort((a,b)=>(it[0]==='done'?b.date-a.date:(rank[stat(a)]-rank[stat(b)])||(stat(a)==='done'?b.date-a.date:a.date-b.date))).slice(0,40)}
 function banHTML(e,i){
@@ -546,6 +572,7 @@ function homeAct(a){
   if(hMode==='row'){
     if(a==='left'&&hi>0){hi--;hs=0;homeDraw(true)}
     else if(a==='right'&&hi<n-1){hi++;hs=0;homeDraw(true)}
+    else if((a==='down'||a==='ok')&&hItems()[hi][0]==='sched')schedSet(true);
     else if((a==='down'||a==='ok')&&len){hMode='strip';homeDraw(true)}
   }else{
     if(a==='left'&&hs>0){hs--;homeDraw(true)}
@@ -557,7 +584,7 @@ function homeAct(a){
 $('modeBtn').onclick=()=>setView(!home);
 addEventListener('keydown',ev=>{if((ev.key==='m'||ev.key==='M')&&!ev.ctrlKey&&!ev.metaKey&&!panelEv&&!(ev.target.closest&&ev.target.closest('input,textarea')))setView(!home)});
 $('hRow').addEventListener('click',ev=>{const t=ev.target.closest('.ht');if(!t)return;const i=+t.dataset.i;
-  if(i===hi&&hMode==='row'&&+$('hStrip').dataset.n){hMode='strip';homeDraw(true)}else{hi=i;hs=0;hMode='row';homeDraw(true)}});
+  if(i===hi&&hMode==='row'&&hItems()[i][0]==='sched'){schedSet(true)}else if(i===hi&&hMode==='row'&&+$('hStrip').dataset.n){hMode='strip';homeDraw(true)}else{hi=i;hs=0;hMode='row';homeDraw(true)}});
 $('hStrip').addEventListener('click',ev=>{const b=ev.target.closest('.ban');if(!b)return;hs=+b.dataset.i;hMode='strip';const e=$('hStrip').__l[hs];if(e)openPanel(e)});
 $('hStrip').addEventListener('wheel',ev=>{if(Math.abs(ev.deltaY)>Math.abs(ev.deltaX)){ev.preventDefault();$('hStrip').scrollLeft+=ev.deltaY}},{passive:false});
 $('hRow').addEventListener('wheel',ev=>{ev.preventDefault();if(Math.abs(ev.deltaY)+Math.abs(ev.deltaX)<8)return;
@@ -627,8 +654,37 @@ $('sheet').addEventListener('click',ev=>{
 });
 function pFocus(i){const c=[...$('chs').children];pi=(i+c.length)%c.length;c.forEach((x,k)=>x.classList.toggle('f',k===pi));c[pi].focus({preventScroll:true})}
 
+/* schedule: next 7 days */
+Object.assign(ICONS,{cal:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'});
+let schedOpen=false,schedDay=0;
+const dayStart=n=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+n);return d};
+function schedDraw(){
+  const days=[...Array(7)].map((_,i)=>dayStart(i)),vis=visEv();
+  const byDay=days.map(d=>vis.filter(e=>e.date.toDateString()===d.toDateString()).sort((a,b)=>a.date-b.date));
+  $('scDays').innerHTML=days.map((d,i)=>`<button class="sd${i===schedDay?' on':''}" data-d="${i}"><b>${i===0?'Today':i===1?'Tomorrow':d.toLocaleDateString([],{weekday:'short'})}</b><span>${d.toLocaleDateString([],{day:'numeric',month:'short'})} · ${byDay[i].length}</span></button>`).join('');
+  const l=byDay[schedDay];let h='',last='';
+  l.forEach(e=>{const hr=e.date.toLocaleTimeString([],{hour:'numeric'});if(hr!==last){last=hr;h+=`<div class="sc-h">${esc(hr)}</div>`}
+    const st=stat(e),t=teams(e.name),sc=st!=='up'?scoreOf(e):null,a=t&&crestOf(t[0]),lg=(a&&crestOf(t[1]))?a:leagueLogo(e);
+    h+=`<button class="srow" data-id="${e.id}"><span class="t">${esc(fmtT(e.date))}</span><span class="lg">${lg?`<img src="${esc(lg)}" alt="" onerror="this.remove()">`:ic(e.sport)}</span>
+      <span class="n"><b>${esc(e.name)}</b><small>${esc(e.cat||SP[e.sport][1])}</small></span>
+      <span class="st${st==='live'?' live':''}">${st==='live'?'LIVE':st==='done'?(sc||'Full time'):(sc||'')}</span></button>`});
+  $('scList').innerHTML=h||'<div class="sc-empty">No streams listed for this day yet.<br>Schedules fill in closer to the day, check back later.</div>';
+  $('scDays').querySelector('.sd.on')?.scrollIntoView({inline:'center',block:'nearest'})
+}
+function schedSet(o){schedOpen=o;$('sched').classList.toggle('open',o);if(o){schedDay=0;schedDraw();$('scList').scrollTop=0}}
+$('scBack').onclick=()=>schedSet(false);
+$('scDays').addEventListener('click',ev=>{const b=ev.target.closest('.sd');if(b){schedDay=+b.dataset.d;schedDraw();$('scList').scrollTop=0}});
+$('scList').addEventListener('click',ev=>{const b=ev.target.closest('.srow');if(!b)return;const e=events.find(x=>x.id==b.dataset.id);if(e)openPanel(e)});
 /* input */
 function act(a){
+  if(schedOpen&&!panelEv){
+    if(a==='back'||a==='sched')schedSet(false);
+    else if(a==='left'&&schedDay>0){schedDay--;schedDraw()}
+    else if(a==='right'&&schedDay<6){schedDay++;schedDraw()}
+    else if(a==='up')$('scList').scrollBy({top:-120,behavior:'smooth'});
+    else if(a==='down')$('scList').scrollBy({top:120,behavior:'smooth'});
+    return}
+  if(a==='sched'&&!panelEv)return schedSet(true);
   if(!panelEv&&home)return homeAct(a);
   if(panelEv){
     if(panelMode==='player'){if(a==='back'&&!document.fullscreenElement)closePanel();return}
@@ -651,13 +707,13 @@ function act(a){
   else if(a==='sport')cycleSport()
 }
 function cycleSport(){const ks=['all',...new Set(events.map(e=>e.sport))];sport=ks[(ks.indexOf(sport)+1)%ks.length];draw()}
-const KEYS={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',Enter:'ok',' ':'ok',Escape:'back',Backspace:'back',s:'sport',S:'sport'};
+const KEYS={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',Enter:'ok',' ':'ok',Escape:'back',Backspace:'back',s:'sport',S:'sport',c:'sched',C:'sched'};
 addEventListener('keydown',ev=>{const a=KEYS[ev.key];if(!a)return;
   if(panelEv&&ev.key==='Enter'&&document.activeElement?.classList.contains('ch')){return}
-  if(ev.target.closest&&ev.target.closest('#playBtn')&&a==='ok'&&!panelEv)return;
+  if(ev.target.closest&&ev.target.closest('#playBtn,.srow,.sd,#scBack')&&a==='ok')return;
   ev.preventDefault();act(a)});
 
-$('tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;tab=+b.dataset.i;mode='tiles';draw()});
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;if(b.dataset.sched)return schedSet(true);tab=+b.dataset.i;mode='tiles';draw()});
 $('chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;sport=b.dataset.s;draw()});
 $('rail').addEventListener('click',e=>{const t=e.target.closest('.tile');if(!t)return;const i=+t.dataset.i;
   if(i===fi)openPanel(list()[i]);else focus(i)});
