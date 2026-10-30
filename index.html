@@ -804,9 +804,10 @@ requestAnimationFrame(pad);
 
 setInterval(()=>{$('clock').textContent=new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})},1000);
 $('clock').textContent=new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
-setInterval(()=>{if(!panelEv)draw(true)},60000);
+setInterval(()=>{if(!panelEv&&window.__kready)draw(true)},60000);
 
 (async function init(){
+  if(!window.__kready)await new Promise(r=>window.__kstart=r);
   try{const r=await fetch(`${API}?endpoint=schedule`);if(!r.ok)throw 0;events=parse(await r.json());if(!events.length)throw 0}
   catch(e){events=demo()}
   tab=events.some(e=>stat(e)==='live')?0:1;
@@ -814,21 +815,26 @@ setInterval(()=>{if(!panelEv)draw(true)},60000);
 })();
 
 /* launch gate: countdown + beta code unlock. Codes are stored only as salted PBKDF2 hashes. */
-(function(){
+(async function(){
   const LAUNCH=Date.UTC(2026,10,5,18,0,0),START=Date.UTC(2026,9,30,0,0,0);
   const G={salt:'3b7317deace7d020db42bb47922a819d',it:200000,h:["bdb260506eb3a2932eeebc46407accf269782b6849909a04514e6f7657259505", "cf4a91851bc51017bcc264dfc17dc2c689b2039ca5493b0fd37c1458ba47656b", "6b8316a2e64e7248d7f5f80f7fda6c6106be95b71382a2020ead7fc53c53667c", "a75f632dc3f5935083ef56d9dea3f50dfbc92dfc2a839af5be6faa02a51fff90", "61763e2bb7a41041f01f5017ac451115eadabf35625ca414be1bf235c0cbdac2", "d23b16fdca26f8e08b0911ff02b37652a6c9db99c0c151f7ee1fd0b2abf6463d", "c4f64b466dc2c5a2e066d60e4d2f6d58592411bc2bd3990504ef2c8a25f648ca", "f9e4f43f52f249e0f96c9dab2f0f9817d9b56c42ce930ac68b898298199fe6a7", "010fd711c1f750536cb77a91f303c046217ba8454d2e32861ac11e2294317a6b", "f89aac876f4734b35facaa81a1e2157ccfd1c83d06e715c5f401582c6307fe69"]};
   const gate=document.getElementById('gate');if(!gate)return;
+  document.documentElement.classList.add('gated');
+  const go=()=>{window.__kready=true;if(window.__kstart)window.__kstart()};
+  /* use the server's clock so changing the device clock can't skip the countdown */
+  let off=0;try{const r=await fetch('config.js',{method:'HEAD',cache:'no-store'}),d=Date.parse(r.headers.get('date'));if(d)off=d-Date.now()}catch(_){}
+  const now=()=>Date.now()+off;
   const pbk=async code=>{const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(code),'PBKDF2',false,['deriveBits']);
     const b=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:new TextEncoder().encode(G.salt),iterations:G.it},k,256);
     return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')};
   const norm=v=>v.toUpperCase().replace(/[^A-Z0-9]/g,'');
   let done=false;
-  const open=()=>{if(done)return;done=true;gate.classList.add('out');document.documentElement.classList.remove('gated');
+  const open=()=>{if(done)return;done=true;go();gate.classList.add('out');document.documentElement.classList.remove('gated');
     document.querySelectorAll('.app,#home,#modeBtn').forEach(n=>n.removeAttribute('inert'));setTimeout(()=>gate.hidden=true,950)};
   const lock=()=>{document.documentElement.classList.add('gated');document.querySelectorAll('.app,#home,#modeBtn').forEach(n=>n.setAttribute('inert',''))};
   /* keep the menus from reacting to keys/gamepad while the gate is up */
   addEventListener('keydown',e=>{if(!done)e.stopPropagation()},true);
-  if(Date.now()>=LAUNCH){gate.hidden=true;done=true;return}
+  if(now()>=LAUNCH){gate.hidden=true;done=true;document.documentElement.classList.remove('gated');go();return}
   const saved=(()=>{try{return localStorage.kbeta}catch(_){return''}})();
   lock();
   if(saved&&G.h.includes(saved))open();
@@ -846,10 +852,10 @@ setInterval(()=>{if(!panelEv)draw(true)},60000);
     else o.col.style.transform=`translateY(${-v}em)`}
   const fill=document.getElementById('gFill'),pct=document.getElementById('gPct');
   function tick(){
-    let ms=Math.max(0,LAUNCH-Date.now());
+    let ms=Math.max(0,LAUNCH-now());
     if(ms===0&&!done){open();return}
     units.forEach(([,u],i)=>{let n=Math.floor(ms/u);ms-=n*u;if(i===0)n=Math.min(n,99);const s=String(n).padStart(2,'0');setDig(digs[i*2],+s[0]);setDig(digs[i*2+1],+s[1])});
-    const p=Math.min(100,Math.max(0,(Date.now()-START)/(LAUNCH-START)*100));fill.style.width=p+'%';pct.textContent=Math.floor(p)+'% there'}
+    const p=Math.min(100,Math.max(0,(now()-START)/(LAUNCH-START)*100));fill.style.width=p+'%';pct.textContent=Math.floor(p)+'% there'}
   tick();setInterval(tick,250);
   /* beta code box */
   const key=document.getElementById('gKey'),inp=document.getElementById('gIn'),msg=document.getElementById('gMsg'),btn=document.getElementById('gGo'),pop=document.getElementById('gPop');
