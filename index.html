@@ -121,95 +121,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .hints{display:flex;gap:18px;flex-wrap:wrap;color:var(--mute);font-weight:700;font-size:.8rem;padding-top:8px}
 .hints kbd{font:inherit;font-weight:800;color:#fff;background:var(--glass);border:1px solid var(--glass-b);border-radius:7px;padding:1px 8px;margin-right:6px}
 
-/* backend: Firebase Realtime Database over REST (setup in BACKEND.md). Without config.js, likes stay on this device only. */
-const CFG=window.KESTREL||{},DBURL=(CFG.databaseURL||'').replace(/\/$/,''),LIVE_BE=!!DBURL;
-let me='';try{me=localStorage.kid||(localStorage.kid=Math.random().toString(36).slice(2,12)+Date.now().toString(36))}catch(_){me='x'+Math.random().toString(36).slice(2)}
-let idToken='',beOk=true,adminData={hidden:{},pinned:{},banner:''},viewers={};
-try{idToken=sessionStorage.kt||''}catch(_){}
-const evKey=e=>e.k||(e.k=(()=>{let h=0;const s=e.name+'|'+e.date.getTime();for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return(h>>>0).toString(36)})());
-async function be(path,method='GET',body){
-  beOk=false;if(!LIVE_BE)return null;
-  try{const q=idToken&&method!=='GET'?'?auth='+idToken:'';
-    const r=await fetch(`${DBURL}/${path}.json${q}`,{method,body:body===undefined?undefined:JSON.stringify(body),keepalive:method!=='GET'});
-    beOk=r.ok;return r.ok?await r.json():null}catch(_){return null}}
-
-/* anonymous likes / dislikes: one vote per browser id */
-const myVote=k=>{try{return+(localStorage['v_'+k]||0)}catch(_){return 0}};
-async function votes(k){
-  let up=0,down=0;
-  if(LIVE_BE){const o=await be('votes/'+k)||{};for(const u in o){if(o[u]===1)up++;else if(o[u]===-1)down++}}
-  else{try{const o=JSON.parse(localStorage['lv_'+k]||'{}');up=o.up||0;down=o.down||0}catch(_){}}
-  return{up,down}}
-async function vote(k,v){
-  const cur=myVote(k),nv=cur===v?0:v;
-  try{nv?localStorage['v_'+k]=nv:localStorage.removeItem('v_'+k)}catch(_){}
-  if(LIVE_BE)await be(`votes/${k}/${me}`,nv?'PUT':'DELETE',nv||undefined);
-  else{try{const o=JSON.parse(localStorage['lv_'+k]||'{}');
-    if(cur===1)o.up=Math.max(0,(o.up||0)-1);if(cur===-1)o.down=Math.max(0,(o.down||0)-1);
-    if(nv===1)o.up=(o.up||0)+1;if(nv===-1)o.down=(o.down||0)+1;localStorage['lv_'+k]=JSON.stringify(o)}catch(_){}}
-  return nv}
-
-/* viewer counts: each open player writes a heartbeat; anything older than 50s is gone */
-let pTimer=0,pKey='';
-const beat=()=>pKey?be(`presence/${pKey}/${me}`,'PUT',Date.now()):null;
-function watching(k){stopWatching();pKey=k;Promise.resolve(beat()).then(refreshViewers);pTimer=setInterval(()=>{beat();refreshViewers()},20000)}
-function stopWatching(){if(pTimer){clearInterval(pTimer);pTimer=0}if(pKey){be(`presence/${pKey}/${me}`,'DELETE');pKey=''}}
-async function refreshViewers(){
-  const o=await be('presence');if(!o)return;const now=Date.now(),v={};
-  for(const k in o){let n=0;for(const u in o[k])if(now-o[k][u]<50000)n++;if(n)v[k]=n}
-  const ch=JSON.stringify(v)!==JSON.stringify(viewers);viewers=v;
-  if(ch){if(panelEv&&panelMode==='player')paintViewers();draw(true)}}
-addEventListener('pagehide',()=>{if(pKey&&LIVE_BE)fetch(`${DBURL}/presence/${pKey}/${me}.json`,{method:'DELETE',keepalive:true}).catch(()=>{})});
-
-/* admin-set options: hidden events, pinned events, announcement banner */
-async function loadAdmin(){
-  const a=await be('admin');if(a)adminData={hidden:a.hidden||{},pinned:a.pinned||{},banner:a.banner||''};
-  paintBanner();draw(true)}
-function paintBanner(){const b=$('banner');b.textContent=adminData.banner;b.hidden=!adminData.banner}
-
-async function signIn(email,pw){
-  const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${encodeURIComponent(CFG.apiKey||'')}`,
-    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw,returnSecureToken:true})});
-  const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message||'Sign-in failed').replace(/_/g,' ').toLowerCase());
-  idToken=j.idToken;try{sessionStorage.kt=idToken}catch(_){}}
-async function openAdmin(msg){
-  let ov=$('admin');if(!ov){ov=document.createElement('div');ov.id='admin';ov.className='adm';document.body.appendChild(ov);
-    ov.addEventListener('click',admClick);ov.addEventListener('submit',admSubmit)}
-  ov.classList.add('open');
-  if(!LIVE_BE){ov.innerHTML=`<div class="adm-box"><button class="adm-x" data-a="close">✕</button><h2>Admin</h2>
-    <p class="adm-note">The shared backend isn't set up yet, so likes stay on this device and viewer counts are off. Fill in <b>config.js</b> using the steps in <b>BACKEND.md</b> to turn on viewer counts and the admin tools.</p></div>`;return}
-  if(!idToken){ov.innerHTML=`<form class="adm-box"><button type="button" class="adm-x" data-a="close">✕</button><h2>Admin sign-in</h2>
-    ${msg?`<p class="adm-err">${esc(msg)}</p>`:''}
-    <input name="e" type="email" placeholder="Email" autocomplete="username" required><input name="p" type="password" placeholder="Password" autocomplete="current-password" required>
-    <button class="play" type="submit">Sign in</button></form>`;return}
-  ov.innerHTML=`<div class="adm-box"><p class="ghost">Loading…</p></div>`;
-  const vs=await be('votes')||{};await refreshViewers();await loadAdmin();
-  const tally=k=>{let u=0,d=0;for(const x in vs[k]||{}){if(vs[k][x]===1)u++;else d++}return[u,d]};
-  const rows=events.slice().sort((a,b)=>a.date-b.date).map(e=>{const k=evKey(e),[u,d]=tally(k);
-    return`<div class="adm-row${adminData.hidden[k]?' off':''}"><div class="adm-n"><b>${esc(e.name)}</b><small>${esc(e.cat)} · ${esc(dayLabel(e.date))} ${esc(fmtT(e.date))}</small></div>
-      <span class="adm-s">👁 ${viewers[k]||0}</span><span class="adm-s">👍 ${u}</span><span class="adm-s">👎 ${d}</span>
-      <button class="mini${adminData.pinned[k]?' on':''}" data-a="pin" data-k="${k}">${adminData.pinned[k]?'Pinned':'Pin'}</button>
-      <button class="mini${adminData.hidden[k]?' on':''}" data-a="hide" data-k="${k}">${adminData.hidden[k]?'Hidden':'Hide'}</button>
-      <button class="mini" data-a="reset" data-k="${k}">Reset votes</button></div>`}).join('');
-  ov.innerHTML=`<div class="adm-box wide"><button class="adm-x" data-a="close">✕</button><h2>Admin</h2>
-    ${msg?`<p class="adm-err">${esc(msg)}</p>`:''}
-    <form class="adm-bn" data-f="banner"><input name="b" value="${esc(adminData.banner)}" maxlength="140" placeholder="Announcement banner shown to everyone (empty to remove)"><button class="mini on" type="submit">Save banner</button></form>
-    <div class="adm-list">${rows||'<p class="adm-note">No events.</p>'}</div>
-    <button class="mini" data-a="out">Sign out</button></div>`}
-async function admWrite(path,method,body){await be(path,method,body);if(!beOk){idToken='';try{delete sessionStorage.kt}catch(_){}return openAdmin('Session expired or this account is not the admin. Sign in again.')}await loadAdmin();openAdmin()}
-function admClick(ev){
-  const b=ev.target.closest('[data-a]');if(!b){if(ev.target===$('admin'))$('admin').classList.remove('open');return}
-  const a=b.dataset.a,k=b.dataset.k;
-  if(a==='close')$('admin').classList.remove('open');
-  else if(a==='out'){idToken='';try{delete sessionStorage.kt}catch(_){}openAdmin()}
-  else if(a==='pin')adminData.pinned[k]?admWrite('admin/pinned/'+k,'DELETE'):admWrite('admin/pinned/'+k,'PUT',true);
-  else if(a==='hide')adminData.hidden[k]?admWrite('admin/hidden/'+k,'DELETE'):admWrite('admin/hidden/'+k,'PUT',true);
-  else if(a==='reset')admWrite('votes/'+k,'DELETE')}
-async function admSubmit(ev){
-  ev.preventDefault();const f=ev.target;
-  if(f.dataset.f==='banner'){const v=f.b.value.trim();return admWrite('admin/banner',v?'PUT':'DELETE',v||undefined)}
-  try{await signIn(f.e.value,f.p.value);openAdmin()}catch(err){openAdmin(err.message)}}
-
 /* stream picker */
 .panel{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
   background:rgba(6,8,20,.55);backdrop-filter:blur(22px) saturate(1.3);-webkit-backdrop-filter:blur(22px) saturate(1.3);opacity:0;pointer-events:none;transition:opacity .3s}
@@ -591,6 +502,95 @@ function focus(i){
     <div class="actions"><button class="play" id="playBtn">▶ Pick a stream</button><span class="ghost">${fi+1} of ${L.length}</span></div>`;
   $('playBtn').onclick=()=>openPanel(e)
 }
+
+/* backend: Firebase Realtime Database over REST (setup in BACKEND.md). Without config.js, likes stay on this device only. */
+const CFG=window.KESTREL||{},DBURL=(CFG.databaseURL||'').replace(/\/$/,''),LIVE_BE=!!DBURL;
+let me='';try{me=localStorage.kid||(localStorage.kid=Math.random().toString(36).slice(2,12)+Date.now().toString(36))}catch(_){me='x'+Math.random().toString(36).slice(2)}
+let idToken='',beOk=true,adminData={hidden:{},pinned:{},banner:''},viewers={};
+try{idToken=sessionStorage.kt||''}catch(_){}
+const evKey=e=>e.k||(e.k=(()=>{let h=0;const s=e.name+'|'+e.date.getTime();for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return(h>>>0).toString(36)})());
+async function be(path,method='GET',body){
+  beOk=false;if(!LIVE_BE)return null;
+  try{const q=idToken&&method!=='GET'?'?auth='+idToken:'';
+    const r=await fetch(`${DBURL}/${path}.json${q}`,{method,body:body===undefined?undefined:JSON.stringify(body),keepalive:method!=='GET'});
+    beOk=r.ok;return r.ok?await r.json():null}catch(_){return null}}
+
+/* anonymous likes / dislikes: one vote per browser id */
+const myVote=k=>{try{return+(localStorage['v_'+k]||0)}catch(_){return 0}};
+async function votes(k){
+  let up=0,down=0;
+  if(LIVE_BE){const o=await be('votes/'+k)||{};for(const u in o){if(o[u]===1)up++;else if(o[u]===-1)down++}}
+  else{try{const o=JSON.parse(localStorage['lv_'+k]||'{}');up=o.up||0;down=o.down||0}catch(_){}}
+  return{up,down}}
+async function vote(k,v){
+  const cur=myVote(k),nv=cur===v?0:v;
+  try{nv?localStorage['v_'+k]=nv:localStorage.removeItem('v_'+k)}catch(_){}
+  if(LIVE_BE)await be(`votes/${k}/${me}`,nv?'PUT':'DELETE',nv||undefined);
+  else{try{const o=JSON.parse(localStorage['lv_'+k]||'{}');
+    if(cur===1)o.up=Math.max(0,(o.up||0)-1);if(cur===-1)o.down=Math.max(0,(o.down||0)-1);
+    if(nv===1)o.up=(o.up||0)+1;if(nv===-1)o.down=(o.down||0)+1;localStorage['lv_'+k]=JSON.stringify(o)}catch(_){}}
+  return nv}
+
+/* viewer counts: each open player writes a heartbeat; anything older than 50s is gone */
+let pTimer=0,pKey='';
+const beat=()=>pKey?be(`presence/${pKey}/${me}`,'PUT',Date.now()):null;
+function watching(k){stopWatching();pKey=k;Promise.resolve(beat()).then(refreshViewers);pTimer=setInterval(()=>{beat();refreshViewers()},20000)}
+function stopWatching(){if(pTimer){clearInterval(pTimer);pTimer=0}if(pKey){be(`presence/${pKey}/${me}`,'DELETE');pKey=''}}
+async function refreshViewers(){
+  const o=await be('presence');if(!o)return;const now=Date.now(),v={};
+  for(const k in o){let n=0;for(const u in o[k])if(now-o[k][u]<50000)n++;if(n)v[k]=n}
+  const ch=JSON.stringify(v)!==JSON.stringify(viewers);viewers=v;
+  if(ch){if(panelEv&&panelMode==='player')paintViewers();draw(true)}}
+addEventListener('pagehide',()=>{if(pKey&&LIVE_BE)fetch(`${DBURL}/presence/${pKey}/${me}.json`,{method:'DELETE',keepalive:true}).catch(()=>{})});
+
+/* admin-set options: hidden events, pinned events, announcement banner */
+async function loadAdmin(){
+  const a=await be('admin');if(a)adminData={hidden:a.hidden||{},pinned:a.pinned||{},banner:a.banner||''};
+  paintBanner();draw(true)}
+function paintBanner(){const b=$('banner');b.textContent=adminData.banner;b.hidden=!adminData.banner}
+
+async function signIn(email,pw){
+  const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${encodeURIComponent(CFG.apiKey||'')}`,
+    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw,returnSecureToken:true})});
+  const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message||'Sign-in failed').replace(/_/g,' ').toLowerCase());
+  idToken=j.idToken;try{sessionStorage.kt=idToken}catch(_){}}
+async function openAdmin(msg){
+  let ov=$('admin');if(!ov){ov=document.createElement('div');ov.id='admin';ov.className='adm';document.body.appendChild(ov);
+    ov.addEventListener('click',admClick);ov.addEventListener('submit',admSubmit)}
+  ov.classList.add('open');
+  if(!LIVE_BE){ov.innerHTML=`<div class="adm-box"><button class="adm-x" data-a="close">✕</button><h2>Admin</h2>
+    <p class="adm-note">The shared backend isn't set up yet, so likes stay on this device and viewer counts are off. Fill in <b>config.js</b> using the steps in <b>BACKEND.md</b> to turn on viewer counts and the admin tools.</p></div>`;return}
+  if(!idToken){ov.innerHTML=`<form class="adm-box"><button type="button" class="adm-x" data-a="close">✕</button><h2>Admin sign-in</h2>
+    ${msg?`<p class="adm-err">${esc(msg)}</p>`:''}
+    <input name="e" type="email" placeholder="Email" autocomplete="username" required><input name="p" type="password" placeholder="Password" autocomplete="current-password" required>
+    <button class="play" type="submit">Sign in</button></form>`;return}
+  ov.innerHTML=`<div class="adm-box"><p class="ghost">Loading…</p></div>`;
+  const vs=await be('votes')||{};await refreshViewers();await loadAdmin();
+  const tally=k=>{let u=0,d=0;for(const x in vs[k]||{}){if(vs[k][x]===1)u++;else d++}return[u,d]};
+  const rows=events.slice().sort((a,b)=>a.date-b.date).map(e=>{const k=evKey(e),[u,d]=tally(k);
+    return`<div class="adm-row${adminData.hidden[k]?' off':''}"><div class="adm-n"><b>${esc(e.name)}</b><small>${esc(e.cat)} · ${esc(dayLabel(e.date))} ${esc(fmtT(e.date))}</small></div>
+      <span class="adm-s">👁 ${viewers[k]||0}</span><span class="adm-s">👍 ${u}</span><span class="adm-s">👎 ${d}</span>
+      <button class="mini${adminData.pinned[k]?' on':''}" data-a="pin" data-k="${k}">${adminData.pinned[k]?'Pinned':'Pin'}</button>
+      <button class="mini${adminData.hidden[k]?' on':''}" data-a="hide" data-k="${k}">${adminData.hidden[k]?'Hidden':'Hide'}</button>
+      <button class="mini" data-a="reset" data-k="${k}">Reset votes</button></div>`}).join('');
+  ov.innerHTML=`<div class="adm-box wide"><button class="adm-x" data-a="close">✕</button><h2>Admin</h2>
+    ${msg?`<p class="adm-err">${esc(msg)}</p>`:''}
+    <form class="adm-bn" data-f="banner"><input name="b" value="${esc(adminData.banner)}" maxlength="140" placeholder="Announcement banner shown to everyone (empty to remove)"><button class="mini on" type="submit">Save banner</button></form>
+    <div class="adm-list">${rows||'<p class="adm-note">No events.</p>'}</div>
+    <button class="mini" data-a="out">Sign out</button></div>`}
+async function admWrite(path,method,body){await be(path,method,body);if(!beOk){idToken='';try{delete sessionStorage.kt}catch(_){}return openAdmin('Session expired or this account is not the admin. Sign in again.')}await loadAdmin();openAdmin()}
+function admClick(ev){
+  const b=ev.target.closest('[data-a]');if(!b){if(ev.target===$('admin'))$('admin').classList.remove('open');return}
+  const a=b.dataset.a,k=b.dataset.k;
+  if(a==='close')$('admin').classList.remove('open');
+  else if(a==='out'){idToken='';try{delete sessionStorage.kt}catch(_){}openAdmin()}
+  else if(a==='pin')adminData.pinned[k]?admWrite('admin/pinned/'+k,'DELETE'):admWrite('admin/pinned/'+k,'PUT',true);
+  else if(a==='hide')adminData.hidden[k]?admWrite('admin/hidden/'+k,'DELETE'):admWrite('admin/hidden/'+k,'PUT',true);
+  else if(a==='reset')admWrite('votes/'+k,'DELETE')}
+async function admSubmit(ev){
+  ev.preventDefault();const f=ev.target;
+  if(f.dataset.f==='banner'){const v=f.b.value.trim();return admWrite('admin/banner',v?'PUT':'DELETE',v||undefined)}
+  try{await signIn(f.e.value,f.p.value);openAdmin()}catch(err){openAdmin(err.message)}}
 
 /* home: console-style main menu (focused tile + row + content strip). Classic menu is the old rail. */
 Object.assign(ICONS,{
