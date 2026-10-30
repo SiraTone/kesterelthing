@@ -207,23 +207,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .pv.min .phandle{display:block}
 .pv:fullscreen .pbar{padding-top:10px}
 @media(max-width:640px){.pbar{gap:8px}.pb{padding:7px 12px}.ptitle{order:-1;flex-basis:100%}.pv-w{order:3}}
-/* admin */
-.banner{margin:0 auto;padding:7px 18px;text-align:center;font-family:'Fredoka',sans-serif;font-weight:600;background:linear-gradient(90deg,var(--c1),var(--c2));color:#fff;font-size:.9rem}
-.admbtn{opacity:.45;font-size:.75rem;font-weight:800;padding:6px 10px;border-radius:99px;background:var(--glass)}.admbtn:hover{opacity:1}
-.adm{position:fixed;inset:0;z-index:60;display:none;place-items:center;padding:16px;background:rgba(5,6,16,.78);backdrop-filter:blur(14px)}
-.adm.open{display:grid}
-.adm-box{position:relative;width:min(420px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:26px;border-radius:26px;background:#12142e;border:2px solid rgba(255,255,255,.14);display:flex;flex-direction:column;gap:12px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
-.adm-box.wide{width:min(900px,100%)}
-.adm-box input{font:inherit;padding:11px 16px;border-radius:99px;border:2px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#fff;min-width:0;flex:1}
-.adm-x{position:absolute;right:14px;top:14px;width:34px;height:34px;border-radius:50%;background:var(--glass);color:#fff}
-.adm-note{color:var(--mute);line-height:1.5}.adm-err{color:#ff7d92;font-weight:700}
-.adm-bn{display:flex;gap:8px}
-.adm-list{display:flex;flex-direction:column;gap:8px}
-.adm-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.05)}
-.adm-row.off{opacity:.5}
-.adm-n{flex:1;min-width:180px;display:flex;flex-direction:column}.adm-n small{color:var(--mute)}
-.adm-s{font-weight:800;font-size:.85rem;font-variant-numeric:tabular-nums}
-.sys .admbtn{border:0;color:#fff;font-family:inherit}
 /* home menu */
 .home{display:none;position:fixed;inset:0;z-index:10;flex-direction:column;--hc:#4aa3ff;--ht:clamp(78px,14vh,150px);--lead:max(22px,6vw);--gap:clamp(8px,1.2vh,14px);
   background:linear-gradient(160deg,#0b45c8 0%,#0a33a3 45%,#082170 100%);color:#fff;overflow:hidden;font-family:'Nunito',system-ui,sans-serif}
@@ -298,11 +281,10 @@ body.home-mode .app{visibility:hidden}
     <nav class="tabs" id="tabs" aria-label="Sections"></nav>
     <div class="sys">
       <div class="chips" id="chips" aria-label="Sport filter"></div>
-      <button class="admbtn" id="admBtn">Admin</button><div class="clock" id="clock"></div>
+      <div class="clock" id="clock"></div>
     </div>
   </header>
 
-  <div class="banner" id="banner" hidden></div>
   <main class="stage" id="stage">
     <div class="railwrap"><div class="rail" id="rail"></div></div>
     <section class="detail" id="detail" aria-live="polite"></section>
@@ -450,9 +432,8 @@ function scoreOf(e){if(stat(e)==='done'&&0)return null;const t=teams(e.name);if(
 /* views */
 function list(){
   const key=TABS[tab][0];
-  const pin=e=>adminData.pinned[evKey(e)]?0:1;
-  return events.filter(e=>!adminData.hidden[evKey(e)]&&(sport==='all'||e.sport===sport)&&(key==='all'||stat(e)===key))
-    .sort((a,b)=>pin(a)-pin(b)||(key==='done'?b.date-a.date:a.date-b.date))
+  return events.filter(e=>(sport==='all'||e.sport===sport)&&(key==='all'||stat(e)===key))
+    .sort((a,b)=>key==='done'?b.date-a.date:a.date-b.date)
 }
 function drawChrome(){
   $('tabs').innerHTML=TABS.map(([k,l],i)=>{
@@ -475,7 +456,7 @@ function tileHTML(e,i){
   const st=stat(e),t=teams(e.name),sc=st!=='up'?scoreOf(e):null;
   const when=st==='live'?'<span class="flag live">LIVE</span>':st==='up'?`<span class="flag">${esc(dayLabel(e.date))} · ${esc(fmtT(e.date))}</span>`:'<span class="flag">Full time</span>';
   return`<div class="tile s-${e.sport}" data-i="${i}" role="button" tabindex="-1" aria-label="${esc(e.name)}"><div class="art" style="background:${bannerBG(e,t)}">${artHTML(e,t,sc)}</div>
-    <div class="info"><div class="nm">${esc(e.name)}</div><div class="row"><span>${esc(e.cat||SP[e.sport][1])}${viewers[evKey(e)]?` · 👁 ${viewers[evKey(e)]}`:''}</span>${when}</div></div></div>`
+    <div class="info"><div class="nm">${esc(e.name)}</div><div class="row"><span>${esc(e.cat||SP[e.sport][1])}</span>${when}</div></div></div>`
 }
 function draw(keep){
   if(home)homeDraw(keep);
@@ -503,94 +484,17 @@ function focus(i){
   $('playBtn').onclick=()=>openPanel(e)
 }
 
-/* backend: Firebase Realtime Database over REST (setup in BACKEND.md). Without config.js, likes stay on this device only. */
-const CFG=window.KESTREL||{},DBURL=(CFG.databaseURL||'').replace(/\/$/,''),LIVE_BE=!!DBURL;
-let me='';try{me=localStorage.kid||(localStorage.kid=Math.random().toString(36).slice(2,12)+Date.now().toString(36))}catch(_){me='x'+Math.random().toString(36).slice(2)}
-let idToken='',beOk=true,adminData={hidden:{},pinned:{},banner:''},viewers={};
-try{idToken=sessionStorage.kt||''}catch(_){}
+/* analytics: Google Analytics 4 (gaId in config.js). Likes/dislikes are remembered on this device only. */
+const GA=(window.KESTREL||{}).gaId||'';
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
+if(GA){const g=document.createElement('script');g.async=true;g.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA);document.head.appendChild(g);
+  gtag('js',new Date());gtag('config',GA)}
+const track=(name,p)=>{if(GA)gtag('event',name,p||{})};
 const evKey=e=>e.k||(e.k=(()=>{let h=0;const s=e.name+'|'+e.date.getTime();for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return(h>>>0).toString(36)})());
-async function be(path,method='GET',body){
-  beOk=false;if(!LIVE_BE)return null;
-  try{const q=idToken&&method!=='GET'?'?auth='+idToken:'';
-    const r=await fetch(`${DBURL}/${path}.json${q}`,{method,body:body===undefined?undefined:JSON.stringify(body),keepalive:method!=='GET'});
-    beOk=r.ok;return r.ok?await r.json():null}catch(_){return null}}
-
-/* anonymous likes / dislikes: one vote per browser id */
 const myVote=k=>{try{return+(localStorage['v_'+k]||0)}catch(_){return 0}};
-async function votes(k){
-  let up=0,down=0;
-  if(LIVE_BE){const o=await be('votes/'+k)||{};for(const u in o){if(o[u]===1)up++;else if(o[u]===-1)down++}}
-  else{try{const o=JSON.parse(localStorage['lv_'+k]||'{}');up=o.up||0;down=o.down||0}catch(_){}}
-  return{up,down}}
-async function vote(k,v){
-  const cur=myVote(k),nv=cur===v?0:v;
+function vote(k,v,e){const nv=myVote(k)===v?0:v;
   try{nv?localStorage['v_'+k]=nv:localStorage.removeItem('v_'+k)}catch(_){}
-  if(LIVE_BE)await be(`votes/${k}/${me}`,nv?'PUT':'DELETE',nv||undefined);
-  else{try{const o=JSON.parse(localStorage['lv_'+k]||'{}');
-    if(cur===1)o.up=Math.max(0,(o.up||0)-1);if(cur===-1)o.down=Math.max(0,(o.down||0)-1);
-    if(nv===1)o.up=(o.up||0)+1;if(nv===-1)o.down=(o.down||0)+1;localStorage['lv_'+k]=JSON.stringify(o)}catch(_){}}
-  return nv}
-
-/* viewer counts: each open player writes a heartbeat; anything older than 50s is gone */
-let pTimer=0,pKey='';
-const beat=()=>pKey?be(`presence/${pKey}/${me}`,'PUT',Date.now()):null;
-function watching(k){stopWatching();pKey=k;Promise.resolve(beat()).then(refreshViewers);pTimer=setInterval(()=>{beat();refreshViewers()},20000)}
-function stopWatching(){if(pTimer){clearInterval(pTimer);pTimer=0}if(pKey){be(`presence/${pKey}/${me}`,'DELETE');pKey=''}}
-async function refreshViewers(){
-  const o=await be('presence');if(!o)return;const now=Date.now(),v={};
-  for(const k in o){let n=0;for(const u in o[k])if(now-o[k][u]<50000)n++;if(n)v[k]=n}
-  const ch=JSON.stringify(v)!==JSON.stringify(viewers);viewers=v;
-  if(ch){if(panelEv&&panelMode==='player')paintViewers();draw(true)}}
-addEventListener('pagehide',()=>{if(pKey&&LIVE_BE)fetch(`${DBURL}/presence/${pKey}/${me}.json`,{method:'DELETE',keepalive:true}).catch(()=>{})});
-
-/* admin-set options: hidden events, pinned events, announcement banner */
-async function loadAdmin(){
-  const a=await be('admin');if(a)adminData={hidden:a.hidden||{},pinned:a.pinned||{},banner:a.banner||''};
-  paintBanner();draw(true)}
-function paintBanner(){const b=$('banner');b.textContent=adminData.banner;b.hidden=!adminData.banner}
-
-async function signIn(email,pw){
-  const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${encodeURIComponent(CFG.apiKey||'')}`,
-    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw,returnSecureToken:true})});
-  const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message||'Sign-in failed').replace(/_/g,' ').toLowerCase());
-  idToken=j.idToken;try{sessionStorage.kt=idToken}catch(_){}}
-async function openAdmin(msg){
-  let ov=$('admin');if(!ov){ov=document.createElement('div');ov.id='admin';ov.className='adm';document.body.appendChild(ov);
-    ov.addEventListener('click',admClick);ov.addEventListener('submit',admSubmit)}
-  ov.classList.add('open');
-  if(!LIVE_BE){ov.innerHTML=`<div class="adm-box"><button class="adm-x" data-a="close">✕</button><h2>Admin</h2>
-    <p class="adm-note">The shared backend isn't set up yet, so likes stay on this device and viewer counts are off. Fill in <b>config.js</b> using the steps in <b>BACKEND.md</b> to turn on viewer counts and the admin tools.</p></div>`;return}
-  if(!idToken){ov.innerHTML=`<form class="adm-box"><button type="button" class="adm-x" data-a="close">✕</button><h2>Admin sign-in</h2>
-    ${msg?`<p class="adm-err">${esc(msg)}</p>`:''}
-    <input name="e" type="email" placeholder="Email" autocomplete="username" required><input name="p" type="password" placeholder="Password" autocomplete="current-password" required>
-    <button class="play" type="submit">Sign in</button></form>`;return}
-  ov.innerHTML=`<div class="adm-box"><p class="ghost">Loading…</p></div>`;
-  const vs=await be('votes')||{};await refreshViewers();await loadAdmin();
-  const tally=k=>{let u=0,d=0;for(const x in vs[k]||{}){if(vs[k][x]===1)u++;else d++}return[u,d]};
-  const rows=events.slice().sort((a,b)=>a.date-b.date).map(e=>{const k=evKey(e),[u,d]=tally(k);
-    return`<div class="adm-row${adminData.hidden[k]?' off':''}"><div class="adm-n"><b>${esc(e.name)}</b><small>${esc(e.cat)} · ${esc(dayLabel(e.date))} ${esc(fmtT(e.date))}</small></div>
-      <span class="adm-s">👁 ${viewers[k]||0}</span><span class="adm-s">👍 ${u}</span><span class="adm-s">👎 ${d}</span>
-      <button class="mini${adminData.pinned[k]?' on':''}" data-a="pin" data-k="${k}">${adminData.pinned[k]?'Pinned':'Pin'}</button>
-      <button class="mini${adminData.hidden[k]?' on':''}" data-a="hide" data-k="${k}">${adminData.hidden[k]?'Hidden':'Hide'}</button>
-      <button class="mini" data-a="reset" data-k="${k}">Reset votes</button></div>`}).join('');
-  ov.innerHTML=`<div class="adm-box wide"><button class="adm-x" data-a="close">✕</button><h2>Admin</h2>
-    ${msg?`<p class="adm-err">${esc(msg)}</p>`:''}
-    <form class="adm-bn" data-f="banner"><input name="b" value="${esc(adminData.banner)}" maxlength="140" placeholder="Announcement banner shown to everyone (empty to remove)"><button class="mini on" type="submit">Save banner</button></form>
-    <div class="adm-list">${rows||'<p class="adm-note">No events.</p>'}</div>
-    <button class="mini" data-a="out">Sign out</button></div>`}
-async function admWrite(path,method,body){await be(path,method,body);if(!beOk){idToken='';try{delete sessionStorage.kt}catch(_){}return openAdmin('Session expired or this account is not the admin. Sign in again.')}await loadAdmin();openAdmin()}
-function admClick(ev){
-  const b=ev.target.closest('[data-a]');if(!b){if(ev.target===$('admin'))$('admin').classList.remove('open');return}
-  const a=b.dataset.a,k=b.dataset.k;
-  if(a==='close')$('admin').classList.remove('open');
-  else if(a==='out'){idToken='';try{delete sessionStorage.kt}catch(_){}openAdmin()}
-  else if(a==='pin')adminData.pinned[k]?admWrite('admin/pinned/'+k,'DELETE'):admWrite('admin/pinned/'+k,'PUT',true);
-  else if(a==='hide')adminData.hidden[k]?admWrite('admin/hidden/'+k,'DELETE'):admWrite('admin/hidden/'+k,'PUT',true);
-  else if(a==='reset')admWrite('votes/'+k,'DELETE')}
-async function admSubmit(ev){
-  ev.preventDefault();const f=ev.target;
-  if(f.dataset.f==='banner'){const v=f.b.value.trim();return admWrite('admin/banner',v?'PUT':'DELETE',v||undefined)}
-  try{await signIn(f.e.value,f.p.value);openAdmin()}catch(err){openAdmin(err.message)}}
+  if(nv)track(nv===1?'like_stream':'dislike_stream',{event_name:e.name,sport:e.sport});return nv}
 
 /* home: console-style main menu (focused tile + row + content strip). Classic menu is the old rail. */
 Object.assign(ICONS,{
@@ -602,20 +506,19 @@ try{home=localStorage.kview!=='classic'}catch(_){home=true}
 function setView(h){home=h;try{localStorage.kview=h?'home':'classic'}catch(_){}
   document.body.classList.toggle('home-mode',h);$('modeBtn').textContent=h?'⇄ Classic menu':'⇄ Home menu';
   if(h)homeDraw(true);else draw(true)}
-const visEv=()=>events.filter(e=>!adminData.hidden[evKey(e)]);
+const visEv=()=>events;
 function hItems(){const v=visEv(),c=k=>v.filter(e=>stat(e)===k).length,sp={};
   const out=[['live','Live now','live',c('live')],['up','Up next','up',c('up')],['done','Finished','done',c('done')],['all','Everything','all',v.length]];
   v.forEach(e=>sp[e.sport]=(sp[e.sport]||0)+1);
   Object.keys(sp).sort((a,b)=>sp[b]-sp[a]).forEach(k=>out.push(['sp:'+k,SP[k][1],k,sp[k]]));return out}
 function hEvents(it){const v=visEv().filter(e=>it[0].startsWith('sp:')?e.sport===it[0].slice(3):it[0]==='all'||stat(e)===it[0]);
   const rank={live:0,up:1,done:2};
-  return v.sort((a,b)=>(adminData.pinned[evKey(a)]?0:1)-(adminData.pinned[evKey(b)]?0:1)
-    ||(it[0]==='done'?b.date-a.date:(rank[stat(a)]-rank[stat(b)])||(stat(a)==='done'?b.date-a.date:a.date-b.date))).slice(0,40)}
+  return v.sort((a,b)=>(it[0]==='done'?b.date-a.date:(rank[stat(a)]-rank[stat(b)])||(stat(a)==='done'?b.date-a.date:a.date-b.date))).slice(0,40)}
 function banHTML(e,i){
   const st=stat(e),t=teams(e.name),sc=st!=='up'?scoreOf(e):null;
   const when=st==='live'?'<span class="flag live">LIVE</span>':st==='up'?`<span class="flag">${esc(dayLabel(e.date))} · ${esc(fmtT(e.date))}</span>`:'<span class="flag">Full time</span>';
   return`<div class="ban${i===hs&&hMode==='strip'?' f':''}" data-i="${i}" role="button" aria-label="${esc(e.name)}"><div class="art" style="background:${bannerBG(e,t)}">${artHTML(e,t,sc)}</div>
-    <div class="info"><div class="nm">${esc(e.name)}</div><div class="row"><span>${esc(e.cat||SP[e.sport][1])}${viewers[evKey(e)]?` · 👁 ${viewers[evKey(e)]}`:''}</span>${when}</div></div></div>`}
+    <div class="info"><div class="nm">${esc(e.name)}</div><div class="row"><span>${esc(e.cat||SP[e.sport][1])}</span>${when}</div></div></div>`}
 function homeDraw(keep){
   const items=hItems();
   if(hi<0||!keep){hi=items[0][3]?0:(items[1][3]?1:3)}
@@ -623,20 +526,17 @@ function homeDraw(keep){
   const it=items[hi],lst=hEvents(it);hs=Math.min(hs,Math.max(0,lst.length-1));
   const sp=it[0].startsWith('sp:')?SP[it[2]]:null;
   $('home').style.setProperty('--hc',sp?sp[2]:'#4aa3ff');
-  const live=visEv().filter(e=>stat(e)==='live').length,tw=Object.values(viewers).reduce((a,b)=>a+b,0);
+  const live=visEv().filter(e=>stat(e)==='live').length;
   $('hStat').innerHTML=`<div class="hs-l"><span class="hs-logo">${ic('live')}</span><b>Kestrel</b></div>
     <div class="hs-note">${live?`<i class="dot"></i>${live} live now`:'Nothing live right now'}</div>
-    ${LIVE_BE&&tw?`<div class="hs-note">👁 ${tw} watching</div>`:''}
-    ${adminData.banner?`<div class="hs-note">📣 ${esc(adminData.banner)}</div>`:''}
-    <div class="hs-r"><button class="admbtn" id="hAdm">Admin</button><span class="hs-user"><span class="av">${ic('default')}</span>Guest</span><span class="hs-clock">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false})}</span></div>`;
-  $('hAdm').onclick=()=>openAdmin();
+    <div class="hs-r"><span class="hs-user"><span class="av">${ic('default')}</span>Guest</span><span class="hs-clock">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false})}</span></div>`;
   const ht=$('hRow'),big=hMode==='row';
   ht.innerHTML=items.map((x,i)=>{const f=i===hi,s=x[0].startsWith('sp:')?SP[x[2]]:null;
     return`<div class="ht${f?' f':''}${f&&hMode==='strip'?' dim':''} k-${x[0].replace(':','-')}" data-i="${i}" style="${s?`--a:${s[2]};--b:${s[3]}`:''}"><div class="hi">${ic(x[2])}</div>
       <div class="hl"><b>${esc(x[1])}</b><small>${x[3]} event${x[3]===1?'':'s'}</small></div></div>`}).join('');
   const small=ht.querySelector('.ht:not(.f)'),w=small?small.offsetWidth+parseFloat(getComputedStyle(ht).columnGap||14):160;
   ht.style.transform=`translateX(${-hi*w}px)`;
-  $('hTitle').innerHTML=`<h1>${esc(it[1])}</h1><p>${it[3]?`${it[3]} event${it[3]===1?'':'s'}`:'Nothing here yet'}${it[0]==='live'&&LIVE_BE&&tw?` · ${tw} watching`:''}</p>`;
+  $('hTitle').innerHTML=`<h1>${esc(it[1])}</h1><p>${it[3]?`${it[3]} event${it[3]===1?'':'s'}`:'Nothing here yet'}</p>`;
   $('hStrip').innerHTML=lst.length?lst.map(banHTML).join(''):`<div class="hempty">Nothing in ${esc(it[1])} right now. Browse another tile.</div>`;
   const f=$('hStrip').querySelector('.ban.f');if(f)f.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});
   $('hStrip').dataset.n=lst.length;$('hStrip').__l=lst;$('hStrip').__sp=sp;
@@ -655,7 +555,7 @@ function homeAct(a){
   }
 }
 $('modeBtn').onclick=()=>setView(!home);
-addEventListener('keydown',ev=>{if((ev.key==='m'||ev.key==='M')&&!ev.ctrlKey&&!ev.metaKey&&!panelEv&&!(ev.target.closest&&ev.target.closest('input,textarea'))&&!$('admin')?.classList.contains('open'))setView(!home)});
+addEventListener('keydown',ev=>{if((ev.key==='m'||ev.key==='M')&&!ev.ctrlKey&&!ev.metaKey&&!panelEv&&!(ev.target.closest&&ev.target.closest('input,textarea')))setView(!home)});
 $('hRow').addEventListener('click',ev=>{const t=ev.target.closest('.ht');if(!t)return;const i=+t.dataset.i;
   if(i===hi&&hMode==='row'&&+$('hStrip').dataset.n){hMode='strip';homeDraw(true)}else{hi=i;hs=0;hMode='row';homeDraw(true)}});
 $('hStrip').addEventListener('click',ev=>{const b=ev.target.closest('.ban');if(!b)return;hs=+b.dataset.i;hMode='strip';const e=$('hStrip').__l[hs];if(e)openPanel(e)});
@@ -679,7 +579,7 @@ function openPanel(e){
   $('panel').classList.add('open');
   setTimeout(()=>$('chs')?.children[0]?.focus({preventScroll:true}),50)
 }
-function leavePlayer(){stopWatching();$('frame')?.remove();$('panel').classList.remove('theatre');$('sheet').classList.remove('play');if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}
+function leavePlayer(){$('frame')?.remove();$('panel').classList.remove('theatre');$('sheet').classList.remove('play');if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}
 function closePanel(){leavePlayer();panelEv=null;$('panel').classList.remove('open')}
 const THUMB='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11v9H4v-9zM7 11l4-8a2 2 0 012 2v4h5.5a2 2 0 012 2.3l-1.2 7a2 2 0 01-2 1.7H7"/></svg>';
 function playChannel(i){
@@ -690,10 +590,10 @@ function playChannel(i){
     <div class="pbar" id="pbar">
       <button class="pb" id="pvBack" title="Back to menu">← Menu</button>
       <div class="ptitle"><h2>${esc(e.name)}</h2>
-        <div class="psub">${st==='live'?'<span class="pill live">● Live</span>':''}<span>${esc(c.channel_name)}</span><span class="pv-w" id="vw"></span></div></div>
+        <div class="psub">${st==='live'?'<span class="pill live">● Live</span>':''}<span>${esc(c.channel_name)}</span></div></div>
       <div class="pright">
-        <button class="pb rate" id="lk" title="Like"><span class="ti">${THUMB}</span><b id="lkN">0</b></button>
-        <button class="pb rate dn" id="dl" title="Dislike"><span class="ti">${THUMB}</span><b id="dlN">0</b></button>
+        <button class="pb rate" id="lk" title="Like"><span class="ti">${THUMB}</span><b>Like</b></button>
+        <button class="pb rate dn" id="dl" title="Dislike"><span class="ti">${THUMB}</span><b>Dislike</b></button>
         <button class="pb" id="pmenuBtn">Streams ▾</button>
         <button class="pb sq" id="fsBtn" title="Fullscreen">⛶</button>
         <button class="pb sq" id="minBtn" title="Hide bar">⌃</button>
@@ -707,21 +607,17 @@ function playChannel(i){
     <div class="pstage"><div class="screen-msg">Loading ${esc(c.channel_name)}…</div>
       <iframe id="frame" src="${esc(url)}" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" title="${esc(e.name)}"></iframe>
       <button class="phandle" id="phandle" title="Show bar">⌄</button></div></div>`;
-  paintVotes(k);paintViewers();watching(k)
+  paintVotes(k);track('stream_play',{event_name:e.name,sport:e.sport,channel:c.channel_name})
 }
-async function paintVotes(k){
-  const v=await votes(k);if(!panelEv||evKey(panelEv)!==k||!$('lkN'))return;
-  const m=myVote(k);$('lkN').textContent=v.up;$('dlN').textContent=v.down;
-  $('lk').classList.toggle('on',m===1);$('dl').classList.toggle('on',m===-1)}
-function paintViewers(){const w=$('vw');if(!w||!panelEv)return;
-  w.textContent=LIVE_BE?`👁 ${Math.max(1,viewers[evKey(panelEv)]||0)} watching`:''}
+function paintVotes(k){if(!panelEv||evKey(panelEv)!==k||!$('lk'))return;
+  const m=myVote(k);$('lk').classList.toggle('on',m===1);$('dl').classList.toggle('on',m===-1)}
 $('sheet').addEventListener('click',async ev=>{
   if(panelMode!=='player'||!panelEv)return;const t=ev.target,k=evKey(panelEv),pv=$('pv');
   if(t.closest('#pvBack'))closePanel();
   else if(t.closest('#pmenuBtn'))$('pmenu').hidden=!$('pmenu').hidden;
   else if(t.closest('#fsBtn')){document.fullscreenElement?document.exitFullscreen():pv.requestFullscreen?.().catch(()=>{})}
   else if(t.closest('#minBtn')||t.closest('#phandle'))pv.classList.toggle('min');
-  else if(t.closest('#lk')||t.closest('#dl')){await vote(k,t.closest('#lk')?1:-1);paintVotes(k)}
+  else if(t.closest('#lk')||t.closest('#dl')){vote(k,t.closest('#lk')?1:-1,panelEv);paintVotes(k)}
 });
 $('sheet').addEventListener('click',ev=>{
   const a=ev.target.closest('.ch');
@@ -796,8 +692,6 @@ setInterval(()=>{if(!panelEv)draw(true)},60000);
   catch(e){events=demo()}
   tab=events.some(e=>stat(e)==='live')?0:1;
   draw();loadScores();
-  $('admBtn').onclick=()=>openAdmin();
-  if(LIVE_BE){loadAdmin();refreshViewers();setInterval(loadAdmin,60000);setInterval(()=>{if(!pKey)refreshViewers()},30000)}
 })();
 </script>
 </body>

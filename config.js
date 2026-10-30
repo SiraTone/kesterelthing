@@ -1,6 +1,4 @@
-/* Shared backend (viewer counts, likes, admin). Leave databaseURL empty to run without it.
-   Steps are in BACKEND.md. */
+/* Google Analytics 4 measurement ID (looks like G-XXXXXXXXXX). Leave empty to disable tracking. See ANALYTICS.md. */
 window.KESTREL={
-  databaseURL:'',   // e.g. https://your-project-default-rtdb.firebaseio.com
-  apiKey:''         // Firebase web API key (used only for admin sign-in)
+  gaId:''
 };
