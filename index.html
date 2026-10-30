@@ -127,6 +127,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .ch .go{font-family:'Fredoka',sans-serif;font-size:.8rem;font-weight:600;color:#12142a;background:#fff;border-radius:99px;padding:2px 12px;opacity:0;transform:translateY(4px);transition:.25s}
 .ch.f,.ch:hover{transform:scale(1.07);background:rgba(255,255,255,.22);border-color:#fff}
 .ch.f .go,.ch:hover .go{opacity:1;transform:none}
+.sheet.play{grid-template-columns:1fr}
+.pv{display:flex;flex-direction:column;gap:12px;min-width:0}
+.pv-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pv-top .back{margin:0;flex-shrink:0}
+.pv-top h2{font-size:clamp(1.1rem,2.4vw,1.6rem)}
+.screen{position:relative;aspect-ratio:16/9;width:min(100%,calc((100vh - 230px)*16/9));margin:0 auto;background:#000;border-radius:22px;overflow:hidden;box-shadow:0 0 0 4px #fff,0 24px 60px rgba(0,0,0,.55)}
+.screen iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.screen-msg{position:absolute;inset:0;display:grid;place-items:center;font-family:'Fredoka',sans-serif;color:var(--mute)}
+.pv-bar{display:flex;flex-direction:column;gap:10px;align-items:center}
+.chipset{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+.chipset .lab{font-weight:800;font-size:.8rem;color:var(--mute)}
+.mini{font-weight:800;font-size:.85rem;padding:7px 15px;border-radius:99px;background:var(--glass);border:2px solid var(--glass-b);color:#fff;text-decoration:none;transition:transform .3s var(--bounce),background .2s}
+.mini:hover{transform:scale(1.08)}
+.mini.on{background:#fff;color:#12142a;border-color:#fff}
+.pv .note{text-align:center}
 .back{margin-top:16px;font-weight:800;color:var(--mute);padding:6px 4px}
 .back:hover{color:#fff}
 .note{font-size:.78rem;color:var(--mute);margin-top:12px;font-weight:700}
@@ -190,7 +205,9 @@ let events=[],tab=0,sport='all',fi=0,mode='tiles',panelEv=null,pi=0,scores={};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const logo=u=>!u?'':/^https?:/.test(u)?u:ORIGIN+u.replace(/^\//,'');
-const stream=id=>`${ORIGIN}embed/stream-${encodeURIComponent(id)}.php`;
+const SERVERS=['stream','cast','watch','plus','casting','player'];
+let panelMode='list',srv=0,chIdx=0;
+const stream=(id,k=srv)=>`${ORIGIN}${SERVERS[k]}/stream-${encodeURIComponent(id)}.php`;
 const fmtT=d=>d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
 const MONTHS=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 
@@ -302,24 +319,48 @@ function focus(i){
 
 /* stream picker */
 function openPanel(e){
-  panelEv=e;pi=0;const s=SP[e.sport];
+  panelEv=e;pi=0;panelMode='list';const s=SP[e.sport];
+  $('sheet').classList.remove('play');
   $('sheet').innerHTML=`${tileHTML(e,0).replace('class="tile','class="tile f')}
     <div><h2 id="pTitle">${esc(e.name)}</h2><p>${esc(s[1])} · ${esc(dayLabel(e.date))} ${esc(fmtT(e.date))} · choose a channel</p>
       <div class="chs" id="chs">${e.chs.map((c,i)=>{const lg=logo(c.logo_url);
         return`<a class="ch${i===0?' f':''}" href="${esc(stream(c.channel_id))}" target="_blank" rel="noopener noreferrer" data-i="${i}">
           ${lg?`<img src="${esc(lg)}" alt="" onerror="this.remove()">`:''}<span>${esc(c.channel_name)}</span><span class="go">Watch</span></a>`}).join('')}</div>
-      <p class="note">Streams open in a new tab. The provider doesn't allow playing inside other sites.</p>
+      <p class="note">Pick a channel to play it right here. If one won't load, switch server or channel.</p>
       <button class="back" id="backBtn">← Back to menu</button></div>`;
   $('backBtn').onclick=closePanel;
   $('panel').classList.add('open');
   setTimeout(()=>$('chs')?.children[0]?.focus({preventScroll:true}),50)
 }
-function closePanel(){panelEv=null;$('panel').classList.remove('open')}
+function closePanel(){$('frame')?.remove();panelEv=null;$('panel').classList.remove('open')}
+function playChannel(i){
+  const e=panelEv,c=e.chs[i];chIdx=i;panelMode='player';
+  const url=stream(c.channel_id);
+  $('sheet').classList.add('play');
+  $('sheet').innerHTML=`<div class="pv">
+    <div class="pv-top"><button class="back" id="pvBack">← Channels</button><h2>${esc(e.name)}</h2></div>
+    <div class="screen"><div class="screen-msg">Loading ${esc(c.channel_name)}…</div>
+      <iframe id="frame" src="${esc(url)}" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" title="${esc(e.name)}"></iframe></div>
+    <div class="pv-bar">
+      <div class="chipset">${e.chs.map((x,k)=>`<button class="mini${k===i?' on':''}" data-k="${k}">${esc(x.channel_name)}</button>`).join('')}</div>
+      <div class="chipset"><span class="lab">Server</span>${SERVERS.map((n,k)=>`<button class="mini${k===srv?' on':''}" data-srv="${k}">${k+1}</button>`).join('')}
+        <a class="mini" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open in tab ↗</a></div>
+    </div>
+    <p class="note">Stuck on loading? Try another server number or channel.</p></div>`;
+  $('pvBack').onclick=()=>openPanel(e)
+}
+$('sheet').addEventListener('click',ev=>{
+  const a=ev.target.closest('.ch');
+  if(a&&panelMode==='list'&&ev.button===0&&!ev.metaKey&&!ev.ctrlKey&&!ev.shiftKey){ev.preventDefault();playChannel(+a.dataset.i);return}
+  const m=ev.target.closest('.mini[data-k]');if(m){playChannel(+m.dataset.k);return}
+  const v=ev.target.closest('.mini[data-srv]');if(v){srv=+v.dataset.srv;playChannel(chIdx)}
+});
 function pFocus(i){const c=[...$('chs').children];pi=(i+c.length)%c.length;c.forEach((x,k)=>x.classList.toggle('f',k===pi));c[pi].focus({preventScroll:true})}
 
 /* input */
 function act(a){
   if(panelEv){
+    if(panelMode==='player'){if(a==='back')openPanel(panelEv);return}
     if(a==='back')closePanel();
     else if(a==='left'||a==='up')pFocus(pi-1);
     else if(a==='right'||a==='down')pFocus(pi+1);
