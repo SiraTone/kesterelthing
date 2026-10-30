@@ -213,8 +213,8 @@ const ic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 /* real league marks from ESPN's CDN */
 const LG=(f,i)=>`https://a.espn.cdn.espn.com/i/leaguelogos/soccer/500/${i}.png`,PRO=l=>`https://a.espn.cdn.espn.com/i/teamlogos/leagues/500/${l}.png`;
 const LEAGUES=[[/premier league|epl|english premier/,LG(0,23)],[/la ?liga|spanish/,LG(0,15)],[/serie a|italian/,LG(0,12)],[/bundesliga|german/,LG(0,10)],
- [/ligue 1|french/,LG(0,9)],[/champions league|ucl/,LG(0,2)],[/europa league/,LG(0,2310)],[/mls|major league soccer/,LG(0,19)],
- [/nba/,PRO('nba')],[/nfl/,PRO('nfl')],[/mlb/,PRO('mlb')],[/nhl/,PRO('nhl')]];
+ [/ligue 1|french/,LG(0,9)],[/champions league|ucl/,LG(0,2)],[/europa league/,LG(0,2310)],[/\bmls\b|major league soccer/,LG(0,19)],
+ [/\bnba\b/,PRO('nba')],[/\bnfl\b/,PRO('nfl')],[/\bmlb\b/,PRO('mlb')],[/\bnhl\b/,PRO('nhl')]];
 const leagueLogo=e=>{const t=(e.cat+' '+e.name).toLowerCase();for(const[r,u]of LEAGUES)if(r.test(t))return u;return''};
 const crests={};
 const crestOf=n=>{n=n.toLowerCase();if(crests[n])return crests[n];for(const k in crests)if(k.includes(n)||n.includes(k))return crests[k];return''};
