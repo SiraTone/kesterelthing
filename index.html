@@ -68,7 +68,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .art{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px}
 .art::before{content:'';position:absolute;width:130%;height:130%;left:-15%;top:-40%;background:radial-gradient(circle,rgba(255,255,255,.28),transparent 60%)}
 .art::after{content:'';position:absolute;right:-18%;bottom:-18%;width:60%;height:60%;border-radius:50%;background:rgba(255,255,255,.1)}
-.emo{font-size:calc(var(--tile)*.34);line-height:1;filter:drop-shadow(0 6px 8px rgba(0,0,0,.3));position:relative;z-index:1}
+.emo{width:calc(var(--tile)*.36);height:calc(var(--tile)*.36);color:#fff;filter:drop-shadow(0 6px 8px rgba(0,0,0,.3));position:relative;z-index:1}
+.emo svg{width:100%;height:100%;stroke-width:1.4}
+.bd{display:grid;place-items:center;width:100%;height:100%;background:#fff;border-radius:50%;padding:14%;box-sizing:border-box}
+.bd img{max-width:100%;max-height:100%;object-fit:contain}
+.bd svg{width:100%;height:100%;color:#223}
+.emo.lg{width:calc(var(--tile)*.4);height:calc(var(--tile)*.4)}
+.crests{position:relative;z-index:1;display:flex;align-items:center;gap:calc(var(--tile)*.03)}
+.crests .bd{width:calc(var(--tile)*.3);height:calc(var(--tile)*.3);box-shadow:0 5px 10px rgba(0,0,0,.3)}
+.crests i{font-style:normal;font-family:'Fredoka',sans-serif;font-weight:700;font-size:calc(var(--tile)*.1);background:rgba(0,0,0,.3);padding:0 .45em;border-radius:99px;white-space:nowrap}
+.pill.ico{display:inline-flex;align-items:center;gap:6px}.pill.ico svg{width:1.15em;height:1.15em}
+.chip svg{width:20px;height:20px}.chip.on{color:#223}
 .tile.f .emo{animation:bob 1.6s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-7px) rotate(-6deg)}}
 .vsline{position:relative;z-index:1;font-family:'Fredoka',sans-serif;font-weight:600;font-size:calc(var(--tile)*.082);text-align:center;line-height:1.1;text-shadow:0 2px 6px rgba(0,0,0,.35);max-width:100%;
@@ -181,15 +191,42 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <script>
 const API='https://thedaddy.pk/api.php';
 const ORIGIN='https://thedaddy.pk/';
+const ICONS={
+ football:'<circle cx="12" cy="12" r="9"/><path d="M12 8l3.5 2.5-1.3 4H9.8l-1.3-4z"/><path d="M12 8V3M15.5 10.5l5-1.5M14.2 14.5l3 4M9.8 14.5l-3 4M8.5 10.5l-5-1.5"/>',
+ basketball:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6c3 3 3 10.8 0 12.8M18.4 5.6c-3 3-3 10.8 0 12.8"/>',
+ tennis:'<circle cx="12" cy="12" r="9"/><path d="M5.5 5.5c4 3 4 10 0 13M18.5 5.5c-4 3-4 10 0 13"/>',
+ cricket:'<path d="M15 3l6 6-9 9-6-6z"/><path d="M6 12l-3 6 3 3 6-3"/><circle cx="19" cy="19" r="2"/>',
+ rugby:'<ellipse cx="12" cy="12" rx="10" ry="6" transform="rotate(-45 12 12)"/><path d="M8.5 15.5l7-7M10 10l4 4"/>',
+ nfl:'<ellipse cx="12" cy="12" rx="10" ry="6" transform="rotate(-45 12 12)"/><path d="M9 15l6-6M10.5 10.5l3 3M8 12.5l3.5 3.5M12.5 8l3.5 3.5"/>',
+ boxing:'<path d="M7 11V7a4 4 0 018 0v3h2a3 3 0 013 3v2a6 6 0 01-6 6h-4a3 3 0 01-3-3z"/><path d="M7 16h10"/>',
+ mma:'<path d="M8 3h8l5 5v8l-5 5H8l-5-5V8z"/><path d="M9 9l6 6M15 9l-6 6"/>',
+ racing:'<path d="M5 21V4M5 4h14l-2 4 2 4H5"/><path d="M9 4v8M13 4v8M5 8h14"/>',
+ baseball:'<circle cx="12" cy="12" r="9"/><path d="M6.5 5c3 3 3 11 0 14M17.5 5c-3 3-3 11 0 14"/>',
+ hockey:'<path d="M5 3l8 14h6"/><ellipse cx="17" cy="20" rx="4" ry="1.5"/>',
+ golf:'<path d="M9 21V3l9 4-9 4"/><path d="M5 21h14"/>',
+ darts:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
+ snooker:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/>',
+ all:'<path d="M7 4h10v5a5 5 0 01-10 0z"/><path d="M7 6H4v2a3 3 0 003 3M17 6h3v2a3 3 0 01-3 3M12 14v4M8 21h8M10 18h4"/>',
+ default:'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/>'
+};
+const ic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]||ICONS.default}</svg>`;
+/* real league marks from ESPN's CDN */
+const LG=(f,i)=>`https://a.espn.cdn.espn.com/i/leaguelogos/soccer/500/${i}.png`,PRO=l=>`https://a.espn.cdn.espn.com/i/teamlogos/leagues/500/${l}.png`;
+const LEAGUES=[[/premier league|epl|english premier/,LG(0,23)],[/la ?liga|spanish/,LG(0,15)],[/serie a|italian/,LG(0,12)],[/bundesliga|german/,LG(0,10)],
+ [/ligue 1|french/,LG(0,9)],[/champions league|ucl/,LG(0,2)],[/europa league/,LG(0,2310)],[/mls|major league soccer/,LG(0,19)],
+ [/nba/,PRO('nba')],[/nfl/,PRO('nfl')],[/mlb/,PRO('mlb')],[/nhl/,PRO('nhl')]];
+const leagueLogo=e=>{const t=(e.cat+' '+e.name).toLowerCase();for(const[r,u]of LEAGUES)if(r.test(t))return u;return''};
+const crests={};
+const crestOf=n=>{n=n.toLowerCase();if(crests[n])return crests[n];for(const k in crests)if(k.includes(n)||n.includes(k))return crests[k];return''};
 const SP={
-  football:['⚽','Football','#19c37d','#0b7a55'],basketball:['🏀','Basketball','#ff9a3d','#e0501d'],
-  tennis:['🎾','Tennis','#c9ea3a','#4fa828'],cricket:['🏏','Cricket','#3cc9b0','#1a7d9a'],
-  rugby:['🏉','Rugby','#9a63ff','#4b2bb5'],boxing:['🥊','Boxing','#ff4f66','#a1163a'],
-  mma:['🥋','MMA','#ff7a45','#8e1d2c'],racing:['🏎️','Racing','#ff3d6e','#3a1c8f'],
-  nfl:['🏈','NFL','#c98a4b','#6a3a1a'],baseball:['⚾','Baseball','#4f95ff','#1c3f9e'],
-  hockey:['🏒','Hockey','#6fdcff','#2a74c8'],golf:['⛳','Golf','#7fdc5f','#1f8a4a'],
-  darts:['🎯','Darts','#ff62d0','#6a2bd0'],snooker:['🎱','Snooker','#2fc069','#0b5a3a'],
-  default:['📺','Other','#5f70ff','#2a2f8f']
+  football:['football','Football','#19c37d','#0b7a55'],basketball:['basketball','Basketball','#ff9a3d','#e0501d'],
+  tennis:['tennis','Tennis','#c9ea3a','#4fa828'],cricket:['cricket','Cricket','#3cc9b0','#1a7d9a'],
+  rugby:['rugby','Rugby','#9a63ff','#4b2bb5'],boxing:['boxing','Boxing','#ff4f66','#a1163a'],
+  mma:['mma','MMA','#ff7a45','#8e1d2c'],racing:['racing','Racing','#ff3d6e','#3a1c8f'],
+  nfl:['nfl','NFL','#c98a4b','#6a3a1a'],baseball:['baseball','Baseball','#4f95ff','#1c3f9e'],
+  hockey:['hockey','Hockey','#6fdcff','#2a74c8'],golf:['golf','Golf','#7fdc5f','#1f8a4a'],
+  darts:['darts','Darts','#ff62d0','#6a2bd0'],snooker:['snooker','Snooker','#2fc069','#0b5a3a'],
+  default:['default','Other','#5f70ff','#2a2f8f']
 };
 function sportOf(c){c=c.toLowerCase();
   if(/foot|soccer/.test(c)&&!/american/.test(c))return'football';
@@ -254,13 +291,14 @@ function demo(){
 }
 
 /* best-effort real scores from ESPN's public scoreboards; matched by team name */
-const ESPN={football:'soccer/eng.1',basketball:'basketball/nba',nfl:'football/nfl',baseball:'baseball/mlb',hockey:'hockey/nhl'};
+const ESPN=[['football','soccer/eng.1'],['football','soccer/esp.1'],['football','soccer/ita.1'],['football','soccer/ger.1'],['football','soccer/fra.1'],['football','soccer/uefa.champions'],['football','soccer/usa.1'],['basketball','basketball/nba'],['nfl','football/nfl'],['baseball','baseball/mlb'],['hockey','hockey/nhl']];
 async function loadScores(){
-  for(const[k,p]of Object.entries(ESPN)){
+  for(const[k,p]of ESPN){
     try{const r=await fetch(`https://site.api.espn.com/apis/site/v2/sports/${p}/scoreboard`);if(!r.ok)continue;
       const j=await r.json();
       for(const ev of j.events||[]){const c=ev.competitions?.[0]?.competitors||[];if(c.length<2)continue;
         const a=c[0].team.shortDisplayName.toLowerCase(),b=c[1].team.shortDisplayName.toLowerCase();
+        for(const x of c){const L=x.team.logo;if(L)for(const n of[x.team.shortDisplayName,x.team.displayName,x.team.name])if(n)crests[n.toLowerCase()]=L}
         scores[a+'|'+b]=`${c[0].score} - ${c[1].score}`;scores[b+'|'+a]=`${c[1].score} - ${c[0].score}`}
     }catch(e){}
   }
@@ -282,15 +320,20 @@ function drawChrome(){
     const n=events.filter(e=>(sport==='all'||e.sport===sport)&&(k==='all'||stat(e)===k)).length;
     return`<button class="tab${i===tab?' on':''}${mode==='tabs'&&i===tab?' kb':''}" data-i="${i}">${l}<small>${n}</small></button>`}).join('');
   const have=[...new Set(events.map(e=>e.sport))];
-  $('chips').innerHTML=`<button class="chip${sport==='all'?' on':''}" data-s="all" title="All sports">🏆</button>`+
-    have.map(k=>`<button class="chip${sport===k?' on':''}" data-s="${k}" title="${esc(SP[k][1])}">${SP[k][0]}</button>`).join('')
+  $('chips').innerHTML=`<button class="chip${sport==='all'?' on':''}" data-s="all" title="All sports">${ic('all')}</button>`+
+    have.map(k=>`<button class="chip${sport===k?' on':''}" data-s="${k}" title="${esc(SP[k][1])}">${ic(k)}</button>`).join('')
 }
+function artHTML(e,t,sc){
+  const a=t&&crestOf(t[0]),b=t&&crestOf(t[1]);
+  if(a&&b)return`<div class="crests"><span class="bd"><img src="${esc(a)}" alt=""></span><i>${sc?esc(sc):'VS'}</i><span class="bd"><img src="${esc(b)}" alt=""></span></div>`;
+  const l=leagueLogo(e);
+  return l?`<div class="emo lg"><span class="bd"><img src="${esc(l)}" alt="" onerror="this.parentNode.outerHTML=this.parentNode.dataset.fb"  ></span></div>`.replace('<span class="bd">',`<span class="bd" data-fb='${ic(e.sport).replace(/'/g,"&#39;")}'>`):`<div class="emo">${ic(e.sport)}</div>`}
 function tileHTML(e,i){
   const s=SP[e.sport],st=stat(e),t=teams(e.name),sc=st!=='up'?scoreOf(e):null;
   const flag=st==='live'?'<span class="flag live">LIVE</span>':st==='up'?`<span class="flag">${esc(fmtT(e.date))}</span>`:'<span class="flag">Full time</span>';
-  const mid=t?`<div class="vsline">${esc(t[0])}<b>${sc?'':'VS'}</b>${sc?`<span class="sc">${esc(sc)}</span>`:''}${esc(t[1])}</div>`
+  const mid=t?`<div class="vsline">${esc(t[0])}<b>${sc||crestOf(t[0])&&crestOf(t[1])?'':'VS'}</b>${sc&&!(crestOf(t[0])&&crestOf(t[1]))?`<span class="sc">${esc(sc)}</span>`:''}${esc(t[1])}</div>`
              :`<div class="vsline">${esc(e.name)}</div>`;
-  return`<div class="tile s-${e.sport}" data-i="${i}" role="button" tabindex="-1" aria-label="${esc(e.name)}">${flag}<div class="art"><div class="emo">${s[0]}</div>${mid}</div></div>`
+  return`<div class="tile s-${e.sport}" data-i="${i}" role="button" tabindex="-1" aria-label="${esc(e.name)}">${flag}<div class="art">${artHTML(e,t,sc)}${mid}</div></div>`
 }
 function draw(keep){
   const L=list();if(!keep)fi=0;if(fi>=L.length)fi=Math.max(0,L.length-1);
@@ -311,7 +354,7 @@ function focus(i){
   document.documentElement.style.setProperty('--lead',(lead+(t.offsetWidth*.1))+'px');
   $('detail').innerHTML=`<h1>${esc(e.name)}</h1>
     <div class="meta">${st==='live'?'<span class="pill live">● Live</span>':st==='done'?'<span class="pill">Full time</span>':''}
-      <span class="pill">${s[0]} ${esc(s[1])}</span><span class="pill">${esc(dayLabel(e.date))} · ${esc(fmtT(e.date))}</span>
+      <span class="pill ico">${ic(e.sport)} ${esc(s[1])}</span><span class="pill">${esc(dayLabel(e.date))} · ${esc(fmtT(e.date))}</span>
       ${sc?`<span class="pill">Score ${esc(sc)}</span>`:''}<span class="pill">${e.chs.length} channel${e.chs.length>1?'s':''}</span></div>
     <div class="actions"><button class="play" id="playBtn">▶ Pick a stream</button><span class="ghost">${fi+1} of ${L.length}</span></div>`;
   $('playBtn').onclick=()=>openPanel(e)
