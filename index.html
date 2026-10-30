@@ -159,6 +159,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 :focus-visible{outline:3px solid #fff;outline-offset:3px}
 @media(max-width:560px){.hints{display:none}.brand span{display:none}.top{gap:10px}.chips{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.01ms!important}}
+.tile{width:calc(var(--tile)*1.7);height:calc(var(--tile)*1.22);border-radius:18px;background:#15112a!important;display:flex;flex-direction:column}
+.tile .art{position:relative;inset:auto;flex:0 0 58%;flex-direction:row;gap:calc(var(--tile)*.16);padding:8px;overflow:hidden}
+.tile .art::before,.tile .art::after{display:none}
+.art i{font-style:normal;font-family:'Fredoka',sans-serif;font-weight:700;font-size:calc(var(--tile)*.17);position:relative;z-index:1;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.cr{height:62%;max-width:34%;object-fit:contain;position:relative;z-index:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.45))}
+.cr.big{height:70%;max-width:60%}
+.emo{width:calc(var(--tile)*.44);height:calc(var(--tile)*.44)}
+.info{flex:1;padding:9px 12px 10px;display:flex;flex-direction:column;justify-content:space-between;min-height:0;text-align:left}
+.nm{font-family:'Fredoka',sans-serif;font-weight:600;font-size:calc(var(--tile)*.098);line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.info .row{display:flex;justify-content:space-between;gap:8px;font-size:calc(var(--tile)*.07);opacity:.8;white-space:nowrap}
+.info .row span:first-child{overflow:hidden;text-overflow:ellipsis}
+.info .flag{position:static;background:none;padding:0;backdrop-filter:none;font-size:inherit;font-weight:700}
+.info .flag.live{background:none;color:#ff5470}
+.sheet{grid-template-columns:minmax(220px,360px) 1fr}
+.sheet .tile{--tile:clamp(130px,17vw,210px)}
+@media(max-width:640px){.sheet{grid-template-columns:1fr}.sheet .tile{--tile:150px}}
 </style>
 </head>
 <body>
@@ -216,7 +232,7 @@ const LEAGUES=[[/premier league|epl|english premier/,LG(0,23)],[/la ?liga|spanis
  [/ligue 1|french/,LG(0,9)],[/champions league|ucl/,LG(0,2)],[/europa league/,LG(0,2310)],[/\bmls\b|major league soccer/,LG(0,19)],
  [/\bnba\b/,PRO('nba')],[/\bnfl\b/,PRO('nfl')],[/\bmlb\b/,PRO('mlb')],[/\bnhl\b/,PRO('nhl')]];
 const leagueLogo=e=>{const t=(e.cat+' '+e.name).toLowerCase();for(const[r,u]of LEAGUES)if(r.test(t))return u;return''};
-const crests={};
+const crests={},tcol={};const tcolOf=n=>{if(!n)return'';n=n.toLowerCase();if(tcol[n])return tcol[n];for(const k in tcol)if(k.includes(n)||n.includes(k))return tcol[k];return''};
 const crestOf=n=>{n=n.toLowerCase();if(crests[n])return crests[n];for(const k in crests)if(k.includes(n)||n.includes(k))return crests[k];return''};
 const SP={
   football:['football','Football','#19c37d','#0b7a55'],basketball:['basketball','Basketball','#ff9a3d','#e0501d'],
@@ -291,20 +307,20 @@ function demo(){
 }
 
 /* best-effort real scores from ESPN's public scoreboards; matched by team name */
-const ESPN=[['football','soccer/eng.1'],['football','soccer/esp.1'],['football','soccer/ita.1'],['football','soccer/ger.1'],['football','soccer/fra.1'],['football','soccer/uefa.champions'],['football','soccer/usa.1'],['basketball','basketball/nba'],['nfl','football/nfl'],['baseball','baseball/mlb'],['hockey','hockey/nhl']];
+const ESPN=[['football','soccer/eng.1'],['football','soccer/esp.1'],['football','soccer/ita.1'],['football','soccer/ger.1'],['football','soccer/fra.1'],['football','soccer/uefa.champions'],['football','soccer/usa.1'],['basketball','basketball/nba'],['basketball','basketball/mens-college-basketball'],['nfl','football/college-football'],['nfl','football/nfl'],['baseball','baseball/mlb'],['hockey','hockey/nhl']];
 async function loadScores(){
   for(const[k,p]of ESPN){
     try{const r=await fetch(`https://site.api.espn.com/apis/site/v2/sports/${p}/scoreboard`);if(!r.ok)continue;
       const j=await r.json();
       for(const ev of j.events||[]){const c=ev.competitions?.[0]?.competitors||[];if(c.length<2)continue;
         const a=c[0].team.shortDisplayName.toLowerCase(),b=c[1].team.shortDisplayName.toLowerCase();
-        for(const x of c){const L=x.team.logo;if(L)for(const n of[x.team.shortDisplayName,x.team.displayName,x.team.name])if(n)crests[n.toLowerCase()]=L}
+        for(const x of c){const L=x.team.logo;const C=x.team.color?'#'+x.team.color:'';if(L)for(const n of[x.team.shortDisplayName,x.team.displayName,x.team.name])if(n){crests[n.toLowerCase()]=L;if(C)tcol[n.toLowerCase()]=C}}
         scores[a+'|'+b]=`${c[0].score} - ${c[1].score}`;scores[b+'|'+a]=`${c[1].score} - ${c[0].score}`}
     }catch(e){}
   }
   draw(true)
 }
-function teams(n){const m=/^(.+?)\s+vs?\.?\s+(.+?)(?:\s*[-–(].*)?$/i.exec(n);return m?[m[1].trim(),m[2].trim()]:null}
+function teams(n){const m=/^(.+?)\s+(?:vs?\.?|at)\s+(.+?)(?:\s*[-–(].*)?$/i.exec(n);return m?[m[1].trim(),m[2].trim()]:null}
 function scoreOf(e){if(stat(e)==='done'&&0)return null;const t=teams(e.name);if(!t)return null;
   const a=t[0].toLowerCase(),b=t[1].toLowerCase();
   for(const k in scores){const[x,y]=k.split('|');if((a.includes(x)||x.includes(a))&&(b.includes(y)||y.includes(b)))return scores[k]}return null}
@@ -325,15 +341,18 @@ function drawChrome(){
 }
 function artHTML(e,t,sc){
   const a=t&&crestOf(t[0]),b=t&&crestOf(t[1]);
-  if(a&&b)return`<div class="crests"><span class="bd"><img src="${esc(a)}" alt=""></span><i>${sc?esc(sc):'VS'}</i><span class="bd"><img src="${esc(b)}" alt=""></span></div>`;
+  if(a&&b)return`<img class="cr" src="${esc(a)}" alt=""><i>${sc?esc(sc):'VS'}</i><img class="cr" src="${esc(b)}" alt="">`;
   const l=leagueLogo(e);
-  return l?`<div class="emo lg"><span class="bd"><img src="${esc(l)}" alt="" onerror="this.parentNode.outerHTML=this.parentNode.dataset.fb"  ></span></div>`.replace('<span class="bd">',`<span class="bd" data-fb='${ic(e.sport).replace(/'/g,"&#39;")}'>`):`<div class="emo">${ic(e.sport)}</div>`}
+  return l?`<img class="cr big" src="${esc(l)}" alt="" onerror="this.outerHTML=this.dataset.fb" data-fb='<div class="emo">${ic(e.sport).replace(/'/g,"&#39;")}</div>'>`:`<div class="emo">${ic(e.sport)}</div>`}
+function bannerBG(e,t){
+  const s=SP[e.sport],ca=t&&tcol[(t[0]||'').toLowerCase()]||tcolOf(t&&t[0]),cb=t&&tcolOf(t[1]);
+  const A=ca&&cb?ca:s[2],B=ca&&cb?cb:s[3];
+  return`linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.5)),linear-gradient(90deg,${A},${B})`}
 function tileHTML(e,i){
-  const s=SP[e.sport],st=stat(e),t=teams(e.name),sc=st!=='up'?scoreOf(e):null;
-  const flag=st==='live'?'<span class="flag live">LIVE</span>':st==='up'?`<span class="flag">${esc(fmtT(e.date))}</span>`:'<span class="flag">Full time</span>';
-  const mid=t?`<div class="vsline">${esc(t[0])}<b>${sc||crestOf(t[0])&&crestOf(t[1])?'':'VS'}</b>${sc&&!(crestOf(t[0])&&crestOf(t[1]))?`<span class="sc">${esc(sc)}</span>`:''}${esc(t[1])}</div>`
-             :`<div class="vsline">${esc(e.name)}</div>`;
-  return`<div class="tile s-${e.sport}" data-i="${i}" role="button" tabindex="-1" aria-label="${esc(e.name)}">${flag}<div class="art">${artHTML(e,t,sc)}${mid}</div></div>`
+  const st=stat(e),t=teams(e.name),sc=st!=='up'?scoreOf(e):null;
+  const when=st==='live'?'<span class="flag live">LIVE</span>':st==='up'?`<span class="flag">${esc(dayLabel(e.date))} · ${esc(fmtT(e.date))}</span>`:'<span class="flag">Full time</span>';
+  return`<div class="tile s-${e.sport}" data-i="${i}" role="button" tabindex="-1" aria-label="${esc(e.name)}"><div class="art" style="background:${bannerBG(e,t)}">${artHTML(e,t,sc)}</div>
+    <div class="info"><div class="nm">${esc(e.name)}</div><div class="row"><span>${esc(e.cat||SP[e.sport][1])}</span>${when}</div></div></div>`
 }
 function draw(keep){
   const L=list();if(!keep)fi=0;if(fi>=L.length)fi=Math.max(0,L.length-1);
