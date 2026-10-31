@@ -493,6 +493,49 @@ body:not(.home-mode) .modebtn{color:var(--k-ink);background:var(--k-paper);borde
 .kl.live{color:var(--k-red)}.kl.live::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;animation:blink 1s infinite}
 .kn{color:var(--k-pitch);background:rgba(61,220,151,.14);border-radius:99px;padding:2px 9px;white-space:nowrap}
 @media(max-width:560px){.cards{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.kart{height:96px}}
+/* embed revamp: picker + player */
+.panel{background:rgba(5,8,7,.78)}
+.panel .sheet:not(.play){width:min(980px,100%);background:linear-gradient(180deg,#151d19,#0f1512);border:1px solid rgba(255,255,255,.08);border-top:1px solid rgba(255,255,255,.08);border-radius:24px;padding:clamp(18px,3vw,32px);box-shadow:0 40px 100px rgba(0,0,0,.6)}
+.panel .sheet h2{color:#fff;font-family:var(--k-body);font-weight:800;letter-spacing:-.02em;font-size:clamp(1.6rem,3.4vw,2.5rem);line-height:1.05;text-shadow:none}
+.panel .sheet p{color:var(--k-mute)}
+.panel .sheet .tile{border-radius:18px;border:1px solid rgba(255,255,255,.08);overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.panel .sheet .tile .nm{color:#fff;font-family:var(--k-body);font-weight:700;font-size:1.05rem}
+.panel .sheet .tile .info{background:#0F1512}
+.panel .sheet .tile .art i{color:#fff;background:rgba(0,0,0,.45);padding:2px 12px;border-radius:99px;font-family:var(--k-body);font-weight:800;text-shadow:none}
+/* badges */
+.flag,.panel .sheet .tile .flag{display:inline-flex;align-items:center;gap:6px;font-family:var(--k-body);font-weight:800;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);padding:3px 10px;border-radius:99px}
+.info .flag,.panel .sheet .tile .info .flag{background:rgba(255,255,255,.08);padding:3px 10px}
+.flag.live,.info .flag.live,.panel .sheet .tile .flag.live{color:#fff;background:rgba(255,107,94,.18);border-color:rgba(255,107,94,.5)}
+.flag.live::before{content:'';width:7px;height:7px;border-radius:50%;background:#FF6B5E;margin:0;box-shadow:0 0 0 3px rgba(255,107,94,.25);animation:blink 1.2s infinite}
+.qb{display:inline-flex;align-items:center;font-family:var(--k-body);font-weight:800;font-size:.68rem;letter-spacing:.08em;color:var(--k-pitch);background:rgba(61,220,151,.12);border:1px solid rgba(61,220,151,.4);padding:2px 8px;border-radius:6px}
+.panel .chs{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.panel .ch{border-radius:14px;background:#1A231E;border:1px solid rgba(255,255,255,.1);color:#fff;padding:12px 14px;min-height:0;transition:background .15s,border-color .15s,transform .15s}
+.panel .ch .cn{font-weight:700}
+.panel .ch .go{color:var(--k-pitch);font-weight:800}
+.panel .ch.f,.panel .ch:hover{background:var(--k-pitch);border-color:var(--k-pitch);color:var(--k-on);transform:translateY(-1px)}
+.panel .ch.f .qb,.panel .ch:hover .qb{color:var(--k-on);background:rgba(0,0,0,.14);border-color:rgba(0,0,0,.25)}
+.panel .ch.f .go,.panel .ch:hover .go{color:var(--k-on)}
+/* player: controls at the bottom */
+.pv,.panel.theatre .pv{background:#050807}
+.pv{flex-direction:column}
+.pstage{order:1;flex:1}
+.pbar{order:2;border:0;border-top:1px solid rgba(255,255,255,.08);background:rgba(10,15,12,.96);backdrop-filter:blur(14px);padding:12px max(18px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));gap:16px;flex-wrap:nowrap}
+.pbar .ptitle{min-width:0}
+.pbar .ptitle h2{font-family:var(--k-body);font-weight:800;letter-spacing:-.01em;font-size:1.05rem;color:#fff}
+.psub{gap:8px;color:#A9B8AF;font-size:.8rem}
+.psub .pill{display:inline-flex;align-items:center;gap:6px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:.66rem;padding:3px 10px;border-radius:99px}
+.psub .pill.live{background:rgba(255,107,94,.16);border:1px solid rgba(255,107,94,.5);color:#fff}
+.psub .pill.live::before{content:'';width:7px;height:7px;border-radius:50%;background:#FF6B5E;animation:blink 1.2s infinite}
+.pb{font-family:var(--k-body);font-weight:700;border-radius:99px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);padding:9px 16px}
+.pb:hover{background:rgba(255,255,255,.14)}
+.pb.sq{width:40px;height:40px;padding:0;justify-content:center;font-size:1rem}
+.rate .ti{width:17px;height:17px}
+.pright{flex-wrap:nowrap;margin-left:auto}
+.pmenu{top:auto;bottom:calc(100% + 10px);right:max(16px,env(safe-area-inset-right));border-radius:18px;background:#111916;border:1px solid rgba(255,255,255,.14);box-shadow:0 -20px 50px rgba(0,0,0,.6)}
+.mini{border-radius:99px;border:1px solid rgba(255,255,255,.2);padding:7px 14px}
+.mini.on{background:var(--k-pitch);border-color:var(--k-pitch);color:var(--k-on)}
+.phandle{top:auto;bottom:12px;background:rgba(10,15,12,.8)}
+@media(max-width:700px){.pbar{flex-wrap:wrap;gap:10px}.pbar .ptitle{flex-basis:100%;order:-1}.pright{margin-left:0;width:100%;flex-wrap:wrap}.rate b{display:none}}
 </style>
 </head>
 <body>
@@ -831,7 +874,7 @@ function openPanel(e){
     <div><h2 id="pTitle">${esc(e.name)}</h2><p>${esc(s[1])} · ${esc(dayLabel(e.date))} ${esc(fmtT(e.date))} · choose a channel</p>
       <div class="chs" id="chs">${e.chs.map((c,i)=>{const lg=logo(c.logo_url);
         return`<a class="ch${i===0?' f':''}" href="${esc(stream(c.channel_id))}" target="_blank" rel="noopener noreferrer" data-i="${i}">
-          ${lg?`<img src="${esc(lg)}" alt="" onerror="this.remove()">`:''}<span>${esc(c.channel_name)}</span><span class="go">Watch</span></a>`}).join('')}</div>
+          ${lg?`<img src="${esc(lg)}" alt="" onerror="this.remove()">`:''}<span class="cn">${esc(c.channel_name)}</span><span class="go">Watch ▸</span></a>`}).join('')}</div>
       <p class="note">Pick a channel to play it right here. If one won't load, switch server or channel.</p>
       <button class="back" id="backBtn">← Back to menu</button></div>`;
   $('backBtn').onclick=closePanel;
