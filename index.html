@@ -795,7 +795,7 @@ function homeDraw(keep){
   const small=ht.querySelector('.ht:not(.f)'),w=small?small.offsetWidth+parseFloat(getComputedStyle(ht).columnGap||14):160;
   ht.style.transform=`translateX(${-hi*w}px)`;
   $('hTitle').innerHTML=`<h1>${esc(it[1])}</h1><p>${it[3]?`${it[3]} event${it[3]===1?'':'s'}`:'Nothing here yet'}</p>`;
-  $('hStrip').innerHTML=lst.length?lst.map(banHTML).join(''):`<div class="hempty">Nothing in ${esc(it[1])} right now. Browse another tile.</div>`;
+  $('hStrip').innerHTML=lst.length?lst.map(banHTML).join(''):it[0]==='sched'?`<div class="hempty">Press Enter or click to open the 7-day schedule.</div>`:`<div class="hempty">Nothing in ${esc(it[1])} right now. Browse another tile.</div>`;
   const f=$('hStrip').querySelector('.ban.f');if(f)f.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});
   $('hStrip').dataset.n=lst.length;$('hStrip').__l=lst;$('hStrip').__sp=sp;
 }
@@ -816,7 +816,7 @@ function homeAct(a){
 $('modeBtn').onclick=()=>setView(!home);
 addEventListener('keydown',ev=>{if((ev.key==='m'||ev.key==='M')&&!ev.ctrlKey&&!ev.metaKey&&!panelEv&&!(ev.target.closest&&ev.target.closest('input,textarea')))setView(!home)});
 $('hRow').addEventListener('click',ev=>{const t=ev.target.closest('.ht');if(!t)return;const i=+t.dataset.i;
-  if(i===hi&&hMode==='row'&&hItems()[i][0]==='sched'){schedSet(true)}else if(i===hi&&hMode==='row'&&+$('hStrip').dataset.n){hMode='strip';homeDraw(true)}else{hi=i;hs=0;hMode='row';homeDraw(true)}});
+  if(hItems()[i][0]==='sched'){hi=i;hs=0;hMode='row';homeDraw(true);schedSet(true)}else if(i===hi&&hMode==='row'&&+$('hStrip').dataset.n){hMode='strip';homeDraw(true)}else{hi=i;hs=0;hMode='row';homeDraw(true)}});
 $('hStrip').addEventListener('click',ev=>{const b=ev.target.closest('.ban');if(!b)return;hs=+b.dataset.i;hMode='strip';const e=$('hStrip').__l[hs];if(e)openPanel(e)});
 $('hStrip').addEventListener('wheel',ev=>{if(Math.abs(ev.deltaY)>Math.abs(ev.deltaX)){ev.preventDefault();$('hStrip').scrollLeft+=ev.deltaY}},{passive:false});
 $('hRow').addEventListener('wheel',ev=>{ev.preventDefault();if(Math.abs(ev.deltaY)+Math.abs(ev.deltaX)<8)return;
