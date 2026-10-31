@@ -468,6 +468,30 @@ body:not(.home-mode) .modebtn{color:var(--k-ink);background:var(--k-paper);borde
 .srow .st{font-family:var(--k-disp);font-weight:800;font-size:1.25rem}
 .srow .st.live{font-family:var(--k-body);font-size:.85rem;color:var(--k-red)}
 .sc-empty{font-family:var(--k-body);color:var(--k-mute);opacity:1;text-align:left;margin:30px 0 0}
+
+/* classic menu: rounded cards grouped by sport, no side pane */
+.app .stage{display:flex;flex-direction:column;justify-content:flex-start;padding-top:10px}
+.app .railwrap{flex:1;min-height:0;height:auto;display:block;padding:0 2px 24px}
+.sg{margin:0 0 26px}
+.sg h2{display:flex;align-items:center;gap:10px;font-family:var(--k-disp);font-weight:800;font-size:1.5rem;line-height:1;margin:0 0 12px;padding-bottom:8px;border-bottom:2px solid var(--a,var(--k-ink));color:var(--k-ink)}
+.sg h2 svg{width:26px;height:26px;stroke:var(--a,var(--k-pitch));fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.sg h2 small{font-family:var(--k-body);font-weight:700;font-size:.8rem;color:var(--k-mute);background:var(--k-paper);border:1px solid var(--k-line);border-radius:99px;padding:2px 9px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.kc{display:flex;flex-direction:column;background:var(--k-paper);border:1px solid var(--k-line);border-radius:18px;overflow:hidden;cursor:pointer;box-shadow:0 1px 2px rgba(15,26,21,.06);transition:transform .15s,box-shadow .15s,border-color .15s}
+.kc:hover,.kc.f{transform:translateY(-3px);box-shadow:0 10px 24px rgba(15,26,21,.16);border-color:var(--k-ink)}
+.kc.f{outline:3px solid var(--k-pitch);outline-offset:2px}
+.kart{display:flex;align-items:center;justify-content:center;gap:16px;height:118px;padding:10px}
+.kart .cr{height:70%;max-width:34%;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(0,0,0,.35))}
+.kart .cr.big{height:76%;max-width:60%}
+.kart i{font-style:normal;font-family:var(--k-disp);font-weight:800;font-size:2rem;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.4)}
+.kart .emo{width:56px;height:56px;color:#fff}.kart .emo svg{stroke-width:1.3}
+.kinfo{padding:12px 14px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kinfo b{font-weight:700;font-size:1.02rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kinfo small{font-size:.82rem;color:var(--k-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.krow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;font-size:.82rem;font-weight:600}
+.kl.live{color:var(--k-red)}.kl.live::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;animation:blink 1s infinite}
+.kn{color:var(--k-pitch);background:rgba(18,80,58,.1);border-radius:99px;padding:2px 9px;white-space:nowrap}
+@media(max-width:560px){.cards{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.kart{height:96px}}
 </style>
 </head>
 <body>
@@ -497,11 +521,10 @@ body:not(.home-mode) .modebtn{color:var(--k-ink);background:var(--k-paper);borde
 
   <main class="stage" id="stage">
     <div class="railwrap"><div class="rail" id="rail"></div></div>
-    <section class="detail" id="detail" aria-live="polite"></section>
   </main>
 
   <footer class="hints">
-    <span><kbd>↑ ↓</kbd>Browse</span><span><kbd>← →</kbd>Section</span><span><kbd>Enter</kbd>Select</span><span><kbd>Esc</kbd>Back</span><span><kbd>S</kbd>Sport</span><span><kbd>C</kbd>Schedule</span><span><kbd>M</kbd>Switch menu</span>
+    <span><kbd>← → ↑ ↓</kbd>Browse</span><span><kbd>Enter</kbd>Select</span><span><kbd>Esc</kbd>Back</span><span><kbd>S</kbd>Sport</span><span><kbd>C</kbd>Schedule</span><span><kbd>M</kbd>Switch menu</span>
   </footer>
 </div>
 
@@ -650,8 +673,9 @@ function scoreOf(e){if(stat(e)==='done'&&0)return null;const t=teams(e.name);if(
 /* views */
 function list(){
   const key=TABS[tab][0];
-  return events.filter(e=>(sport==='all'||e.sport===sport)&&(key==='all'||stat(e)===key))
-    .sort((a,b)=>key==='done'?b.date-a.date:a.date-b.date)
+  const f=events.filter(e=>(sport==='all'||e.sport===sport)&&(key==='all'||stat(e)===key))
+    .sort((a,b)=>key==='done'?b.date-a.date:a.date-b.date);
+  return[...new Set(f.map(e=>e.sport))].flatMap(s=>f.filter(e=>e.sport===s))
 }
 function drawChrome(){
   $('tabs').innerHTML=TABS.map(([k,l],i)=>{
@@ -685,30 +709,36 @@ function rowHTML(e,i){
   const s=st==='live'?`<span class="fs live">Live${sc?' '+esc(sc):''}</span>`:st==='done'?(sc?`<span class="fs">${esc(sc)}</span>`:'<span class="fs dim">Full time</span>'):'<span class="fs dim"></span>';
   return`<div class="frow" data-i="${i}" role="button" tabindex="-1" aria-label="${esc(e.name)}"><span class="ft">${esc(fmtT(e.date))}</span><span class="fx">${fxHTML(e,t)}</span>
     <span class="fn"><b>${esc(e.name)}</b><small>${esc(e.cat||SP[e.sport][1])}</small></span>${s}</div>`}
+function cardHTML(e,i){
+  const st=stat(e),t=teams(e.name),sc=st!=='up'?scoreOf(e):null,n=e.chs.length;
+  const when=st==='live'?`<span class="kl live">LIVE${sc?' · '+esc(sc):''}</span>`:st==='up'?`<span class="kl">${esc(dayLabel(e.date))} · ${esc(fmtT(e.date))}</span>`:`<span class="kl">Full time${sc?' · '+esc(sc):''}</span>`;
+  return`<div class="kc" data-i="${i}" role="button" tabindex="-1" aria-label="${esc(e.name)}"><div class="kart" style="background:${bannerBG(e,t)}">${artHTML(e,t,sc)}</div>
+    <div class="kinfo"><b>${esc(e.name)}</b><small>${esc(e.cat||SP[e.sport][1])}</small><div class="krow">${when}<span class="kn">${n} stream${n>1?'s':''}</span></div></div></div>`}
 function draw(keep){
   if(home)homeDraw(keep);
   const L=list();if(!keep)fi=0;if(fi>=L.length)fi=Math.max(0,L.length-1);
   drawChrome();
   const rail=$('rail');
-  if(!L.length){rail.innerHTML='';$('detail').innerHTML=`<div class="empty">Nothing here right now. Try another section or sport.</div>`;setColors('#5f70ff','#2a2f8f');return}
-  let day='';rail.innerHTML=L.map((e,i)=>{const d=dayLabel(e.date),h=d!==day?`<div class="fday">${esc(d)}</div>`:'';day=d;return h+rowHTML(e,i)}).join('');
+  if(!L.length){rail.innerHTML=`<div class="empty">Nothing here right now. Try another section or sport.</div>`;return}
+  let cur='';rail.innerHTML=L.map((e,i)=>{let h='';
+    if(e.sport!==cur){if(cur)h+='</div></section>';cur=e.sport;const n=L.filter(x=>x.sport===cur).length;
+      h+=`<section class="sg" style="--a:${SP[cur][2]}"><h2>${ic(cur)}<span>${esc(SP[cur][1])}</span><small>${n}</small></h2><div class="cards">`}
+    return h+cardHTML(e,i)}).join('')+'</div></section>';
   focus(fi)
 }
 function setColors(a,b){const r=document.documentElement.style;r.setProperty('--c1',a);r.setProperty('--c2',b)}
 function focus(i){
   const L=list();if(!L.length)return;fi=Math.max(0,Math.min(L.length-1,i));
-  const rows=[...$('rail').querySelectorAll('.frow')];rows.forEach((r,k)=>r.classList.toggle('f',k===fi));
-  const e=L[fi],s=SP[e.sport],st=stat(e),sc=st!=='up'?scoreOf(e):null,t=teams(e.name);
-  setColors(s[2],s[3]);
-  if(rows[fi])rows[fi].scrollIntoView({block:'nearest'});
-  const status=st==='live'?'Live now'+(sc?', '+sc:''):st==='done'?(sc?'Full time, '+sc:'Full time'):'Not started';
-  $('detail').innerHTML=`<h1>${esc(e.name)}</h1>
-    <div class="dart" style="background:${bannerBG(e,t)}">${artHTML(e,t,sc)}</div>
-    <dl class="dfacts"><dt>Competition</dt><dd>${esc(e.cat||s[1])}</dd><dt>Starts</dt><dd>${esc(dayLabel(e.date))}, ${esc(fmtT(e.date))}</dd>
-      <dt>Status</dt><dd class="${st==='live'?'live':''}">${esc(status)}</dd><dt>Streams</dt><dd>${e.chs.length} channel${e.chs.length>1?'s':''}</dd></dl>
-    <div class="actions"><button class="play" id="playBtn">Choose a stream</button><span class="ghost">${fi+1} of ${L.length}</span></div>`;
-  $('playBtn').onclick=()=>openPanel(e)
+  const cs=[...$('rail').querySelectorAll('.kc')];cs.forEach((c,k)=>c.classList.toggle('f',k===fi&&mode!=='tabs'));
+  if(cs[fi])cs[fi].scrollIntoView({block:'nearest'})
 }
+/* move focus to the nearest card in the row above (-1) or below (1); returns false if none */
+function vmove(dir){
+  const cs=[...$('rail').querySelectorAll('.kc')],c=cs[fi];if(!c)return false;
+  const r=c.getBoundingClientRect();let best=-1,bd=1e9;
+  cs.forEach((x,k)=>{const q=x.getBoundingClientRect(),dy=(q.top-r.top)*dir;if(dy<=4)return;
+    const d=dy*1000+Math.abs(q.left-r.left);if(d<bd){bd=d;best=k}});
+  if(best<0)return false;focus(best);return true}
 
 /* analytics: Google Analytics 4 (gaId in config.js). Likes/dislikes are remembered on this device only. */
 const GA=(window.KESTREL||{}).gaId||'';
@@ -897,13 +927,13 @@ function act(a){
   if(mode==='tabs'){
     if(a==='left'){tab=(tab+TABS.length-1)%TABS.length;draw()}
     else if(a==='right'){tab=(tab+1)%TABS.length;draw()}
-    else if(a==='down'||a==='ok'){mode='tiles';drawChrome()}
+    else if(a==='down'||a==='ok'){mode='tiles';drawChrome();focus(fi)}
     return
   }
-  if(a==='left'){tab=(tab+TABS.length-1)%TABS.length;draw()}
-  else if(a==='right'){tab=(tab+1)%TABS.length;draw()}
-  else if(a==='down')focus(fi+1);
-  else if(a==='up'){if(fi>0)focus(fi-1);else{mode='tabs';drawChrome()}}
+  if(a==='left')focus(fi-1);
+  else if(a==='right')focus(fi+1);
+  else if(a==='down')vmove(1);
+  else if(a==='up'){if(!vmove(-1)){mode='tabs';drawChrome();focus(fi)}}
   else if(a==='ok'){const e=list()[fi];if(e)openPanel(e)}
   else if(a==='sport')cycleSport()
 }
@@ -916,7 +946,7 @@ addEventListener('keydown',ev=>{const a=KEYS[ev.key];if(!a)return;
 
 $('tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;if(b.dataset.sched)return schedSet(true);tab=+b.dataset.i;mode='tiles';draw()});
 $('chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;sport=b.dataset.s;draw()});
-$('rail').addEventListener('click',e=>{const t=e.target.closest('.frow');if(!t)return;const i=+t.dataset.i;
+$('rail').addEventListener('click',e=>{const t=e.target.closest('.kc');if(!t)return;const i=+t.dataset.i;
   focus(i);openPanel(list()[i])});
 $('panel').addEventListener('click',e=>{if(e.target.id==='panel')closePanel()});
 let wheelLock=false,tx=0;
