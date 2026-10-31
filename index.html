@@ -863,7 +863,7 @@ function playChannel(i){
       </div>
     </div>
     <div class="pstage"><div class="screen-msg">Loading ${esc(c.channel_name)}…</div>
-      <iframe id="frame" src="${esc(url)}" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" title="${esc(e.name)}"></iframe>
+      <iframe id="frame" src="${esc(url)}" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="no-referrer-when-downgrade" title="${esc(e.name)}"></iframe>
       <button class="phandle" id="phandle" title="Show bar">⌄</button></div></div>`;
   paintVotes(k);track('stream_play',{event_name:e.name,sport:e.sport,channel:c.channel_name})
 }
