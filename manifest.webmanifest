@@ -1,0 +1,22 @@
+{
+ "name": "Kestrel: Live Sports Streams",
+ "short_name": "Kestrel",
+ "description": "Watch live sports streams free: football, NBA, NFL, UFC, boxing, F1, cricket, rugby, tennis and more. Live scores, today's schedule and multiple stream links in one fast menu.",
+ "start_url": "/",
+ "scope": "/",
+ "display": "standalone",
+ "background_color": "#0B0F0D",
+ "theme_color": "#0B0F0D",
+ "icons": [
+  {
+   "src": "assets/apple-touch-icon.png",
+   "sizes": "180x180",
+   "type": "image/png"
+  },
+  {
+   "src": "assets/icon.svg",
+   "sizes": "any",
+   "type": "image/svg+xml"
+  }
+ ]
+}
